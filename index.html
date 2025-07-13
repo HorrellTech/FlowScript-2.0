@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowScript 2.0 - Modular Visual JS</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+</head>
+<body>
+
+    <div class="app-container">
+        <header class="app-header">
+            <h1><i class="fa-solid fa-sitemap"></i> FlowScript 2.0</h1>
+            <div class="theme-switcher">
+                <label for="theme-select">Theme:</label>
+                <select id="theme-select">
+                    <option value="dark">Dark</option>
+                    <option value="light">Light</option>
+                    <option value="cyber">Cyber</option>
+                </select>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- TOOLBOX: Will be populated dynamically by JavaScript -->
+            <aside id="toolbox">
+                <h2>Toolbox</h2>
+                <div id="toolbox-items">
+                    <!-- Blocks will be inserted here -->
+                </div>
+            </aside>
+
+            <!-- WORKSPACE: Where the script is built -->
+            <section id="workspace">
+                <h2>Workspace</h2>
+                <div id="drop-zone" class="drop-zone">
+                    <p class="placeholder-text">Drag blocks from the toolbox here to start building your script.</p>
+                </div>
+            </section>
+
+            <!-- OUTPUT PANEL: Displays the generated code -->
+            <aside id="output-panel">
+                <h2>Generated JavaScript</h2>
+                <div class="code-header">
+                    <button id="copy-button">
+                        <i class="fa-solid fa-copy"></i> Copy Code
+                    </button>
+                </div>
+                <pre class="code-preview"><code id="generated-code">// Your code will appear here...</code></pre>
+            </aside>
+        </main>
+    </div>
+
+</body>
+</html>
