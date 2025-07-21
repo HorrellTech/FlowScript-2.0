@@ -8,23 +8,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     // == BLOCK DEFINITIONS: The heart of the modular system. ==
     // =========================================================================
-    const BLOCK_DEFINITIONS = [
+    const BLOCK_DEFINITIONS = {
         // =========================================================================
-        // == HTML STRUCTURE & PAGE ==
+        // == HTML GROUP ==
         // =========================================================================
-        {
-            type: 'html_document', label: 'HTML Document', icon: 'fa-solid fa-file-code', color: '#f7768e',
-            html: () => `
-                <div class="block-content"><label><!DOCTYPE html></label></div>
-                <div class="block-content"><label><html lang="</label><input type="text" placeholder="en" data-token="lang" style="width: 40px;"><label>"></label></div>
-                <div class="nested-drop-zone" data-branch="head"><p class="placeholder-text">Drop <head> elements here...</p></div>
-                <div class="nested-drop-zone" data-branch="body"><p class="placeholder-text">Drop <body> elements here...</p></div>
-                <div class="block-content" style="margin-top: 0.5rem;"><label></html></label></div>
-            `,
-            parser: (b, i) => {
-                const langInput = b.querySelector('[data-token="lang"]');
-                const lang = langInput ? langInput.value || 'en' : 'en';
-                return `<!DOCTYPE html>
+        html: [
+            {
+                type: 'html_document', label: 'HTML Document', icon: 'fa-solid fa-file-code', color: '#f7768e',
+                html: () => `
+                    <div class="block-content"><label><!DOCTYPE html></label></div>
+                    <div class="block-content"><label><html lang="</label><input type="text" placeholder="en" data-token="lang" style="width: 40px;" title="Set the language of the document (e.g., 'en', 'es')."><label>"></label></div>
+                    <div class="nested-drop-zone" data-branch="head">
+                        <div class="drop-zone-label">Head</div>
+                        <p class="placeholder-text">Drop <head> elements here...</p>
+                    </div>
+                    <div class="nested-drop-zone" data-branch="body">
+                        <div class="drop-zone-label">Body</div>
+                        <p class="placeholder-text">Drop <body> elements here...</p>
+                    </div>
+                    <div class="block-content" style="margin-top: 0.5rem;"><label></html></label></div>
+                `,
+                parser: (b, i) => {
+                    const langInput = b.querySelector('[data-token="lang"]');
+                    const lang = langInput ? langInput.value : 'en';
+                    return `<!DOCTYPE html>
 <html lang="${lang}">
 ${i}<head>
 ${parseZone(b.querySelector('[data-branch="head"]'), i + '    ')}
@@ -33,259 +40,804 @@ ${i}<body>
 ${parseZone(b.querySelector('[data-branch="body"]'), i + '    ')}
 ${i}</body>
 </html>`;
+                },
+                importer: (node) => {
+                    if (node.nodeName.toLowerCase() !== 'html') return null;
+                    return {
+                        type: 'html_document',
+                        tokens: { lang: node.getAttribute('lang') || 'en' },
+                        branches: {
+                            head: node.querySelector('head'),
+                            body: node.querySelector('body')
+                        }
+                    };
+                }
+            },
+            {
+                type: 'div_container', label: 'Div Container', icon: 'fa-solid fa-square-full', color: '#e0af68',
+                html: () => `
+                    <div class="block-content">
+                        <label><div</label>
+                        <input type="text" placeholder="id" data-token="id" style="width: 80px;" title="The unique ID for this element.">
+                        <input type="text" placeholder="class" data-token="class" style="width: 120px;" title="Space-separated list of CSS classes.">
+                        <input type="text" placeholder="style" data-token="style" style="width: 140px;" title="Inline CSS (e.g. 'color: red;')">
+                        <label>></label>
+                    </div>
+                    <div class="nested-drop-zone" data-branch="body">
+                        <div class="drop-zone-label">Content</div>
+                        <p class="placeholder-text">Content for div...</p>
+                    </div>
+                    <div class="block-content" style="margin-top: 0.5rem;"><label></div></label></div>
+                `,
+                parser: (b, i) => {
+                    const idInput = b.querySelector('[data-token="id"]');
+                    const classInput = b.querySelector('[data-token="class"]');
+                    const styleInput = b.querySelector('[data-token="style"]');
+                    const id = idInput ? idInput.value : '';
+                    const cls = classInput ? classInput.value : '';
+                    const style = styleInput ? styleInput.value : '';
+                    let attrs = '';
+                    if (id) attrs += ` id="${id}"`;
+                    if (cls) attrs += ` class="${cls}"`;
+                    if (style) attrs += ` style="${style}"`;
+                    return `<div${attrs}>\n${parseZone(b.querySelector('[data-branch="body"]'), i + '    ')}${i}</div>`;
+                },
+                importer: (node) => {
+                    if (node.nodeName.toLowerCase() !== 'div') return null;
+                    return {
+                        type: 'div_container',
+                        tokens: { id: node.id, class: node.className, style: node.style.cssText },
+                        branches: { body: node }
+                    };
+                }
+            },
+            {
+                type: 'title', label: 'Page Title', icon: 'fa-solid fa-t', color: '#73daca',
+                html: () => `<div class="block-content"><label>&lt;title&gt;</label><input type="text" placeholder="My Awesome Page" data-token="value" title="The text to display in the browser tab."><label>&lt;/title&gt;</label></div>`,
+                parser: b => {
+                    const input = b.querySelector('[data-token="value"]');
+                    return `<title>${input ? input.value : 'Document'}</title>`;
+                },
+                importer: (node) => {
+                    if (node.nodeName.toLowerCase() !== 'title') return null;
+                    return { type: 'title', tokens: { value: node.textContent } };
+                }
+            },
+            {
+                type: 'meta_charset', label: 'Meta Charset', icon: 'fa-solid fa-globe', color: '#73daca',
+                html: () => `<div class="block-content"><label>&lt;meta charset="UTF-8"&gt;</label></div>`,
+                parser: () => `<meta charset="UTF-8">`,
+                importer: (node) => (node.nodeName.toLowerCase() === 'meta' && node.getAttribute('charset')) ? { type: 'meta_charset', tokens: {} } : null
+            },
+            {
+                type: 'meta_viewport', label: 'Meta Viewport', icon: 'fa-solid fa-mobile-screen', color: '#73daca',
+                html: () => `<div class="block-content"><label>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</label></div>`,
+                parser: () => `<meta name="viewport" content="width=device-width, initial-scale=1.0">`,
+                importer: (node) => (node.nodeName.toLowerCase() === 'meta' && node.getAttribute('name') === 'viewport') ? { type: 'meta_viewport', tokens: {} } : null
+            },
+            {
+                type: 'heading', label: 'Heading', icon: 'fa-solid fa-heading', color: '#c0caf5',
+                html: () => `
+                    <div class="block-content">
+                        <label><</label>
+                        <select data-token="level" title="The heading level (h1 is most important).">
+                            <option value="h1" selected>h1</option><option value="h2">h2</option><option value="h3">h3</option>
+                            <option value="h4">h4</option><option value="h5">h5</option><option value="h6">h6</option>
+                        </select>
+                        <label>></label>
+                        <input type="text" placeholder="Heading Text" data-token="text" style="flex-grow: 1;" title="The text content of the heading.">
+                        <input type="text" placeholder="style" data-token="style" style="width: 120px;" title="Inline CSS">
+                        <label></...</label>
+                    </div>`,
+                parser: b => {
+                    const level = b.querySelector('[data-token="level"]').value;
+                    const text = b.querySelector('[data-token="text"]').value;
+                    const style = b.querySelector('[data-token="style"]').value;
+                    const styleAttr = style ? ` style="${style}"` : '';
+                    return `<${level}${styleAttr}>${text || 'Heading'}</${level}>`;
+                },
+                importer: (node) => {
+                    const match = node.nodeName.match(/^H([1-6])$/i);
+                    if (!match) return null;
+                    return {
+                        type: 'heading',
+                        tokens: {
+                            level: `h${match[1]}`,
+                            text: node.textContent,
+                            style: node.style.cssText
+                        }
+                    };
+                }
+            },
+            {
+                type: 'paragraph', label: 'Paragraph', icon: 'fa-solid fa-paragraph', color: '#c0caf5',
+                html: () => `<div class="block-content"><label>&lt;p&gt;</label><input type="text" placeholder="Paragraph text..." data-token="text" title="The text content of the paragraph." style="flex-grow: 1;"><input type="text" placeholder="style" data-token="style" style="width: 120px;" title="Inline CSS"><label>&lt;/p&gt;</label></div>`,
+                parser: b => {
+                    const style = b.querySelector('[data-token="style"]').value;
+                    const styleAttr = style ? ` style="${style}"` : '';
+                    return `<p${styleAttr}>${b.querySelector('[data-token="text"]').value || ''}</p>`
+                },
+                importer: (node) => {
+                    if (node.nodeName.toLowerCase() !== 'p') return null;
+                    return { type: 'paragraph', tokens: { text: node.textContent, style: node.style.cssText } };
+                }
+            },
+            {
+                type: 'image', label: 'Image', icon: 'fa-solid fa-image', color: '#c0caf5',
+                html: () => `<div class="block-content"><label>&lt;img src="</label><input type="text" placeholder="path/to/image.jpg" data-token="src" title="The path or URL to the image file."><label>" alt="</label><input type="text" placeholder="description" data-token="alt" title="Alternative text for screen readers and if the image fails to load."><input type="text" placeholder="style" data-token="style" style="width: 120px;" title="Inline CSS"><label>"&gt;</label></div>`,
+                parser: b => {
+                    const style = b.querySelector('[data-token="style"]').value;
+                    const styleAttr = style ? ` style="${style}"` : '';
+                    return `<img src="${b.querySelector('[data-token="src"]').value || ''}" alt="${b.querySelector('[data-token="alt"]').value || ''}"${styleAttr}>`
+                },
+                importer: (node) => {
+                    if (node.nodeName.toLowerCase() !== 'img') return null;
+                    return { type: 'image', tokens: { src: node.src, alt: node.alt, style: node.style.cssText } };
+                }
+            },
+            {
+                type: 'link', label: 'Link (Anchor)', icon: 'fa-solid fa-up-right-from-square', color: '#c0caf5',
+                html: () => `<div class="block-content"><label>&lt;a href="</label><input type="text" placeholder="https://example.com" data-token="href" title="The URL the link points to."><label>"&gt;</label><input type="text" placeholder="Link Text" data-token="text" title="The visible text for the link;"><input type="text" placeholder="style" data-token="style" style="width: 120px;" title="Inline CSS"><label>&lt;/a&gt;</label></div>`,
+                parser: b => {
+                    const style = b.querySelector('[data-token="style"]').value;
+                    const styleAttr = style ? ` style="${style}"` : '';
+                    return `<a href="${b.querySelector('[data-token="href"]').value || '#'}"${styleAttr}>${b.querySelector('[data-token="text"]').value || 'link'}</a>`
+                },
+                importer: (node) => {
+                    if (node.nodeName.toLowerCase() !== 'a') return null;
+                    return { type: 'link', tokens: { href: node.href, text: node.textContent, style: node.style.cssText } };
+                }
+            },
+            {
+                type: 'button', label: 'Button', icon: 'fa-solid fa-computer-mouse', color: '#c0caf5',
+                html: () => `<div class="block-content"><label>&lt;button id="</label><input type="text" placeholder="myButton" data-token="id" title="A unique ID for this button, useful for JavaScript."><label>"&gt;</label><input type="text" placeholder="Click Me" data-token="text" title="The text displayed on the button."><input type="text" placeholder="style" data-token="style" style="width: 120px;" title="Inline CSS"><label>&lt;/button&gt;</label></div>`,
+                parser: b => {
+                    const style = b.querySelector('[data-token="style"]').value;
+                    const styleAttr = style ? ` style="${style}"` : '';
+                    return `<button id="${b.querySelector('[data-token="id"]').value || ''}"${styleAttr}>${b.querySelector('[data-token="text"]').value || 'Button'}</button>`
+                },
+                importer: (node) => {
+                    if (node.nodeName.toLowerCase() !== 'button') return null;
+                    return { type: 'button', tokens: { id: node.id, text: node.textContent, style: node.style.cssText } };
+                }
+            },
+            {
+                type: 'link_css', label: 'Link External CSS', icon: 'fa-solid fa-link', color: '#73daca',
+                html: () => `<div class="block-content"><label>&lt;link rel="stylesheet" href="</label><input type="text" placeholder="style.css" data-token="href" title="Path or URL to an external CSS stylesheet." style="min-width: 120px;"><label>"&gt;</label></div>`,
+                parser: b => `<link rel="stylesheet" href="${b.querySelector('[data-token="href"]').value || ''}">`,
+                importer: (node) => {
+                    if (node.nodeName.toLowerCase() !== 'link' || node.getAttribute('rel') !== 'stylesheet') return null;
+                    return { type: 'link_css', tokens: { href: node.getAttribute('href') } };
+                }
+            },
+            {
+                type: 'inline_style', label: 'Inline Style CSS', icon: 'fa-solid fa-palette', color: '#7aa2f7',
+                html: () => `
+                    <div class="block-content"><label>&lt;style&gt;</label></div>
+                    <div class="nested-drop-zone" data-branch="body">
+                        <div class="drop-zone-label">CSS Rules</div>
+                        <p class="placeholder-text">Drop CSS Rule blocks here...</p>
+                    </div>
+                    <div class="block-content" style="margin-top: 0.5rem;"><label>&lt;/style&gt;</label></div>`,
+                parser: (b, i) => `<style>\n${parseZone(b.querySelector('[data-branch="body"]'), i + '    ')}${i}</style>`,
+                importer: (node) => {
+                    if (node.nodeName.toLowerCase() !== 'style') return null;
+                    return {
+                        type: 'inline_style',
+                        tokens: {},
+                        branches: { body: node }
+                    };
+                }
+            },
+            {
+                type: 'script_src', label: 'Script (Source)', icon: 'fa-solid fa-file-import', color: '#9ece6a',
+                html: () => `<div class="block-content">
+                <label>&lt;script defer src="</label>
+                <input type="text" placeholder="app.js" data-token="src" title="Path or URL to an external JavaScript file." style="min-width: 120px;">
+                <label>"&gt;&lt;/script&gt;</label></div>`,
+                parser: b => `<script defer src="${b.querySelector('[data-token="src"]').value || ''}"></script>`,
+                importer: (node) => {
+                    if (node.nodeName.toLowerCase() !== 'script' || !node.hasAttribute('src')) return null;
+                    return { type: 'script_src', tokens: { src: node.getAttribute('src') } };
+                }
+            },
+            {
+                type: 'script_inline', label: 'Inline Script', icon: 'fa-brands fa-js', color: '#9ece6a',
+                html: () => `
+                    <div class="block-content"><label>&lt;script&gt;</label></div>
+                    <div class="nested-drop-zone" data-branch="body">
+                        <div class="drop-zone-label">JavaScript</div>
+                        <p class="placeholder-text">Drop JavaScript blocks here...</p>
+                    </div>
+                    <div class="block-content" style="margin-top: 0.5rem;"><label>&lt;/script&gt;</label></div>`,
+                parser: (b, i) => `<script>\n${parseZone(b.querySelector('[data-branch="body"]'), i + '    ')}${i}</script>`,
+                importer: (node) => {
+                    if (node.nodeName.toLowerCase() !== 'script' || node.hasAttribute('src')) return null;
+                    return {
+                        type: 'script_inline',
+                        tokens: {},
+                        branches: { body: node }
+                    };
+                }
+            },
+        ],
+        // CSS
+        css: [
+            {
+                type: 'style_tag', label: 'Style Tag', icon: 'fa-solid fa-palette', color: '#7aa2f7',
+                html: () => `
+                    <div class="block-content"><label>&lt;style&gt;</label></div>
+                    <div class="nested-drop-zone" data-branch="body">
+                        <div class="drop-zone-label">CSS Rules</div>
+                        <p class="placeholder-text">Drop CSS Rule blocks here...</p>
+                    </div>
+                    <div class="block-content" style="margin-top: 0.5rem;"><label>&lt;/style&gt;</label></div>`,
+                parser: (b, i) => `<style>\n${parseZone(b.querySelector('[data-branch="body"]'), i + '    ')}${i}</style>`,
+                importer: (node) => {
+                    if (node.nodeName.toLowerCase() !== 'style') return null;
+                    return {
+                        type: 'style_tag',
+                        tokens: {},
+                        branches: { body: node }
+                    };
+                }
+            },
+            {
+                type: 'css_rule', label: 'CSS Rule', icon: 'fa-solid fa-pen-ruler', color: '#7dcfff',
+                html: () => `
+                    <div class="block-content"><input type="text" placeholder=".my-class" data-token="selector" title="CSS selector (e.g., '.container', '#header', 'p')." style="min-width: 120px;"><label> {</label></div>
+                    <div class="nested-drop-zone" data-branch="body">
+                        <div class="drop-zone-label">Properties</div>
+                        <p class="placeholder-text">Drop CSS properties here...</p>
+                    </div>
+                    <div class="block-content" style="margin-top: 0.5rem;"><label>}</label></div>`,
+                parser: (b, i) => {
+                    const selector = b.querySelector('[data-token="selector"]').value || 'selector';
+                    return `${selector} {\n${parseZone(b.querySelector('[data-branch="body"]'), i + '    ')}${i}}`;
+                }
+            },
+            {
+                type: 'css_property', label: 'CSS Property', icon: 'fa-solid fa-paint-roller', color: '#c0caf5',
+                html: () => `<div class="block-content"><input type="text" placeholder="property" data-token="property" style="min-width: 100px;" title="CSS property name (e.g., 'font-weight')."><label>:</label><input type="text" placeholder="value" data-token="value" style="min-width: 120px;" title="CSS property value (e.g., 'bold', '10px')."><label>;</label></div>`,
+                parser: b => {
+                    const prop = b.querySelector('[data-token="property"]').value || 'property';
+                    const val = b.querySelector('[data-token="value"]').value || 'value';
+                    return `${prop}: ${val};`;
+                }
+            },
+            {
+                type: 'css_raw', label: 'Raw CSS', icon: 'fa-solid fa-file-code', color: '#7aa2f7',
+                html: () => `<div class="block-content"><label>CSS Code:</label><br><textarea placeholder="Enter your raw CSS here..." data-token="code" class="themed-textarea" title="For any custom CSS not covered by other blocks."></textarea></div>`,
+                parser: b => b.querySelector('[data-token="code"]').value || '',
+                importer: (node) => {
+                    if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() && node.parentNode.nodeName.toLowerCase() === 'style') {
+                        return {
+                            type: 'css_raw',
+                            tokens: { code: node.textContent.trim() }
+                        };
+                    }
+                    return null;
+                }
+            },
+        ],
+        // JAVASCRIPT
+        javascript: [
+            {
+                type: 'javascript', label: 'Raw Code', icon: 'fa-solid fa-file-code', color: '#bb9af7',
+                html: () => `<div class="block-content"><label>JavaScript Code:</label><br><textarea placeholder="Enter your code here..." data-token="code" class="themed-textarea" title="For any custom code not covered by other blocks."></textarea></div>`,
+                parser: b => b.querySelector('[data-token="code"]').value || '',
+                // ADDED: Importer to handle raw text content inside a <script> tag.
+                importer: (node) => {
+                    if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() && node.parentNode.nodeName.toLowerCase() === 'script' && !node.parentNode.hasAttribute('src')) {
+                        return {
+                            type: 'javascript',
+                            tokens: { code: node.textContent.trim() }
+                        };
+                    }
+                    return null;
+                }
+            },
+            {
+                type: 'variable', label: 'Declare Variable', icon: 'fa-solid fa-code', color: '#bb9af7',
+                html: () => `<div class="block-content"><label>const</label><input type="text" placeholder="variableName" data-token="name" title="The name of the variable."><label>=</label><input type="text" placeholder='"value"' data-token="value" title="The value to assign (strings must be in quotes)."></div>`,
+                parser: b => `const ${b.querySelector('[data-token="name"]').value || 'myVar'} = ${b.querySelector('[data-token="value"]').value || '""'};`
+            },
+            {
+                type: 'get_element', label: 'Get Element By Id', icon: 'fa-solid fa-hand-pointer', color: '#c0caf5',
+                html: () => `<div class="block-content"><label>const</label><input type="text" placeholder="element" data-token="varName" title="The variable name to store the element in."><label>= document.getElementById(</label><input type="text" placeholder="'id'" data-token="id" title="The ID of the element to find (must be in quotes)."><label>)</label></div>`,
+                parser: (b) => `const ${b.querySelector('[data-token="varName"]').value || 'element'} = document.getElementById(${b.querySelector('[data-token="id"]').value || "''"});`
+            },
+            {
+                type: 'add_listener', label: 'Add Event Listener', icon: 'fa-solid fa-ear-listen', color: '#e0af68',
+                html: () => `<div class="block-content"><input type="text" placeholder="element" data-token="element" title="The element variable to attach the listener to." style="min-width: 80px;"><label>.addEventListener(</label><input type="text" placeholder="'click'" data-token="event" title="The event to listen for (e.g., 'click', 'mouseover'). Must be in quotes." style="min-width: 80px;"><label>, () => {</label></div><div class="nested-drop-zone" data-branch="body"><div class="drop-zone-label">Callback Function</div><p class="placeholder-text">Drop JavaScript blocks here...</p></div><div class="block-content" style="margin-top: 0.5rem;"><label>});</label></div>`,
+                parser: (b, i) => {
+                    const el = b.querySelector('[data-token="element"]').value || 'element';
+                    const event = b.querySelector('[data-token="event"]').value || "'click'";
+                    return `${el}.addEventListener(${event}, () => {\n${parseZone(b.querySelector('[data-branch="body"]'), i + '    ')}${i}});`;
+                }
+            },
+            {
+                type: 'log', label: 'Console Log', icon: 'fa-solid fa-terminal', color: '#7dcfff',
+                html: () => `<div class="block-content"><label>console.log(</label><input type="text" placeholder="message" data-token="value" title="The variable or string to print to the console."><label>)</label></div>`,
+                parser: b => `console.log(${b.querySelector('[data-token="value"]').value || "''"});`
+            },
+            {
+                type: 'if', label: 'If/Else', icon: 'fa-solid fa-code-branch', color: '#e0af68',
+                html: () => `<div class="block-content"><label>if (</label><input type="text" placeholder="condition" data-token="condition" title="The condition to check (e.g., 'x > 5')." style="min-width: 120px;"><label>) {</label></div><div class="nested-drop-zone" data-branch="then"><div class="drop-zone-label">Then</div><p class="placeholder-text">Drop blocks here...</p></div><div class="block-content" style="margin-top: 0.5rem;"><label>} else {</label></div><div class="nested-drop-zone" data-branch="else"><div class="drop-zone-label">Else</div><p class="placeholder-text">Drop blocks here...</p></div><div class="block-content" style="margin-top: 0.5rem;"><label>}</label></div>`,
+                parser: (b, i) => {
+                    const cond = b.querySelector('[data-token="condition"]').value || 'true';
+                    return `if (${cond}) {\n${parseZone(b.querySelector('[data-branch="then"]'), i + '    ')}${i}} else {\n${parseZone(b.querySelector('[data-branch="else"]'), i + '    ')}${i}}`;
+                }
+            },
+            {
+                type: 'for_loop', label: 'For Loop', icon: 'fa-solid fa-repeat', color: '#9ece6a',
+                html: () => `<div class="block-content"><label>for (</label><input type="text" placeholder="let i = 0" data-token="init" style="min-width: 80px;" title="Initialization statement (e.g., 'let i = 0')"><label>;</label><input type="text" placeholder="i < 10" data-token="condition" style="min-width: 60px;" title="Condition to continue loop (e.g., 'i < 10')"><label>;</label><input type="text" placeholder="i++" data-token="increment" style="min-width: 40px;" title="Increment statement (e.g., 'i++')"><label>) {</label></div><div class="nested-drop-zone" data-branch="body"><div class="drop-zone-label">Loop Body</div><p class="placeholder-text">Drop blocks here...</p></div><div class="block-content" style="margin-top: 0.5rem;"><label>}</label></div>`,
+                parser: (b, i) => {
+                    const init = b.querySelector('[data-token="init"]').value || 'let i=0';
+                    const cond = b.querySelector('[data-token="condition"]').value || 'i<10';
+                    const inc = b.querySelector('[data-token="increment"]').value || 'i++';
+                    return `for (${init}; ${cond}; ${inc}) {\n${parseZone(b.querySelector('[data-branch="body"]'), i + '    ')}${i}}`;
+                }
+            },
+            {
+                type: 'function', label: 'Function', icon: 'fa-solid fa-rocket', color: '#73daca',
+                html: () => `<div class="block-content"><label>function </label><input type="text" placeholder="myFunction" data-token="name" title="The name of the function." style="min-width: 100px;"><label>(</label><input type="text" placeholder="p1, p2" data-token="params" title="Comma-separated list of parameters." style="min-width: 80px;"><label>) {</label></div><div class="nested-drop-zone" data-branch="body"><div class="drop-zone-label">Function Body</div><p class="placeholder-text">Drop blocks here...</p></div><div class="block-content" style="margin-top: 0.5rem;"><label>}</label></div>`,
+                parser: (b, i) => {
+                    const name = b.querySelector('[data-token="name"]').value || 'myFunc';
+                    const params = b.querySelector('[data-token="params"]').value || '';
+                    return `function ${name}(${params}) {\n${parseZone(b.querySelector('[data-branch="body"]'), i + '    ')}${i}}`;
+                }
+            },
+            {
+                type: 'function_call', label: 'Call Function', icon: 'fa-solid fa-play', color: '#73daca',
+                html: () => `<div class="block-content"><input type="text" placeholder="myFunction" data-token="name" title="The name of the function to call."><label>(</label><input type="text" placeholder="arg1, 'arg2'" data-token="args" title="Comma-separated list of arguments."><label>);</label></div>`,
+                parser: (b) => `${b.querySelector('[data-token="name"]').value || 'myFunction'}(${b.querySelector('[data-token="args"]').value || ''});`
+            },
+            {
+                type: 'set_innerHTML', label: 'Set innerHTML', icon: 'fa-solid fa-marker', color: '#c0caf5',
+                html: () => `<div class="block-content"><input type="text" placeholder="element" data-token="element" title="The element variable."><label>.innerHTML =</label><input type="text" placeholder="'<p>New content</p>'" data-token="value" title="The HTML string to set."></div>`,
+                parser: (b) => `${b.querySelector('[data-token="element"]').value || 'element'}.innerHTML = ${b.querySelector('[data-token="value"]').value || "''"};`
+            },
+            {
+                type: 'return_statement', label: 'Return', icon: 'fa-solid fa-arrow-left', color: '#bb9af7',
+                html: () => `<div class="block-content"><label>return</label><input type="text" placeholder="value" data-token="value" title="The value to return from the function."></div>`,
+                parser: (b) => `return ${b.querySelector('[data-token="value"]').value || ''};`
+            },
+            {
+                type: 'comment', label: 'Comment', icon: 'fa-solid fa-comment-dots', color: '#565f89',
+                html: () => `<div class="block-content"><label>//</label><input type="text" placeholder="Your comment" data-token="value" style="width: 80%;" title="A descriptive comment (does not affect code)."></div>`,
+                parser: b => `// ${b.querySelector('[data-token="value"]').value || ''}`
+            },
+        ],
+        // CUSTOM BLOCKS - for unrecognized HTML/CSS/JS elements
+        custom: [
+            {
+                type: 'custom_html', label: 'Custom HTML Element', icon: 'fa-solid fa-code', color: '#ff9500',
+                html: () => `
+                    <div class="block-content">
+                        <label>&lt;</label>
+                        <input type="text" placeholder="tagname" data-token="tagname" style="width: 100px;" title="HTML tag name (e.g., 'section', 'article')">
+                        <input type="text" placeholder="attributes" data-token="attributes" style="width: 200px;" title="HTML attributes (e.g., 'id=&quot;main&quot; class=&quot;container&quot;')">
+                        <label>&gt;</label>
+                    </div>
+                    <div class="nested-drop-zone" data-branch="content">
+                        <div class="drop-zone-label">Content</div>
+                        <p class="placeholder-text">Drop content blocks here...</p>
+                    </div>
+                    <div class="block-content" style="margin-top: 0.5rem;">
+                        <label>&lt;/</label>
+                        <span class="closing-tag-name">tagname</span>
+                        <label>&gt;</label>
+                    </div>
+                `,
+                parser: (b, i) => {
+                    const tagname = b.querySelector('[data-token="tagname"]').value || 'div';
+                    const attributes = b.querySelector('[data-token="attributes"]').value || '';
+                    const attrs = attributes ? ` ${attributes}` : '';
+                    return `<${tagname}${attrs}>\n${parseZone(b.querySelector('[data-branch="content"]'), i + '    ')}${i}</${tagname}>`;
+                },
+                importer: (node) => {
+                    // This will be used as a fallback for unrecognized HTML elements
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        const tagName = node.nodeName.toLowerCase();
+                        // Get all attributes as a string
+                        let attributesStr = '';
+                        if (node.attributes && node.attributes.length > 0) {
+                            const attrs = [];
+                            for (let i = 0; i < node.attributes.length; i++) {
+                                const attr = node.attributes[i];
+                                attrs.push(`${attr.name}="${attr.value}"`);
+                            }
+                            attributesStr = attrs.join(' ');
+                        }
+                        return {
+                            type: 'custom_html',
+                            tokens: {
+                                tagname: tagName,
+                                attributes: attributesStr
+                            },
+                            branches: { content: node }
+                        };
+                    }
+                    return null;
+                }
+            },
+            {
+                type: 'custom_css', label: 'Custom CSS Code', icon: 'fa-solid fa-palette', color: '#7aa2f7',
+                html: () => `
+                    <div class="block-content">
+                        <label>Custom CSS:</label>
+                        <br>
+                        <textarea placeholder="Enter your custom CSS here..." data-token="css" class="themed-textarea" title="Any CSS code that doesn't have a specific block." style="width: 100%; min-height: 100px;"></textarea>
+                    </div>
+                `,
+                parser: b => b.querySelector('[data-token="css"]').value || '',
+                importer: (node) => {
+                    // Handle unrecognized CSS content
+                    if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() &&
+                        node.parentNode && node.parentNode.nodeName.toLowerCase() === 'style') {
+                        const cssText = node.textContent.trim();
+                        // Check if it's not already handled by other CSS blocks
+                        if (!cssText.match(/^\s*[.#\w\s,>+~\[\]:()-]+\s*\{/) && cssText.length > 0) {
+                            return {
+                                type: 'custom_css',
+                                tokens: { css: cssText }
+                            };
+                        }
+                    }
+                    return null;
+                }
+            },
+            {
+                type: 'custom_javascript', label: 'Custom JavaScript Code', icon: 'fa-brands fa-js', color: '#f7df1e',
+                html: () => `
+                    <div class="block-content">
+                        <label>Custom JavaScript:</label>
+                        <br>
+                        <textarea placeholder="Enter your custom JavaScript here..." data-token="js" class="themed-textarea" title="Any JavaScript code that doesn't have a specific block." style="width: 100%; min-height: 100px;"></textarea>
+                    </div>
+                `,
+                parser: b => b.querySelector('[data-token="js"]').value || '',
+                importer: (node) => {
+                    // Handle unrecognized JavaScript content
+                    if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() &&
+                        node.parentNode && node.parentNode.nodeName.toLowerCase() === 'script' &&
+                        !node.parentNode.hasAttribute('src')) {
+                        const jsText = node.textContent.trim();
+                        // Check if it's not already handled by other JS blocks
+                        if (jsText.length > 0) {
+                            return {
+                                type: 'custom_javascript',
+                                tokens: { js: jsText }
+                            };
+                        }
+                    }
+                    return null;
+                }
+            },
+            {
+                type: 'raw_text', label: 'Raw Text Content', icon: 'fa-solid fa-font', color: '#c0caf5',
+                html: () => `
+                    <div class="block-content">
+                        <label>Text Content:</label>
+                        <br>
+                        <textarea placeholder="Enter raw text content..." data-token="text" class="themed-textarea" title="Plain text content." style="width: 100%; min-height: 60px;"></textarea>
+                    </div>
+                `,
+                parser: b => b.querySelector('[data-token="text"]').value || '',
+                importer: (node) => {
+                    // Handle text nodes that aren't empty
+                    if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+                        // Only import if it's not inside a script or style tag (those are handled separately)
+                        const parentTag = node.parentNode ? node.parentNode.nodeName.toLowerCase() : '';
+                        if (parentTag !== 'script' && parentTag !== 'style') {
+                            return {
+                                type: 'raw_text',
+                                tokens: { text: node.textContent }
+                            };
+                        }
+                    }
+                    return null;
+                }
             }
+        ]
+    };
+
+    // =========================================================================
+    // == TEMPLATE DEFINITIONS ==
+    // =========================================================================
+    const TEMPLATE_DEFINITIONS = {
+        blank: {
+            name: 'Blank Page',
+            description: 'A minimal HTML document with basic structure',
+            html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blank Page</title>
+</head>
+<body>
+    
+</body>
+</html>`
         },
-        {
-            type: 'div_container', label: 'Div Container', icon: 'fa-solid fa-square-full', color: '#e0af68',
-            html: () => `
-        <div class="block-content">
-            <label><div</label>
-            <input type="text" placeholder="id" data-token="id" style="width: 80px;">
-            <input type="text" placeholder="class" data-token="class" style="width: 120px;">
-            <label>></label>
+        landing: {
+            name: 'Landing Page',
+            description: 'A modern landing page template',
+            html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Our Service</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        .hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 4rem 2rem; text-align: center; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .cta-button { background: #ff6b6b; color: white; padding: 1rem 2rem; border: none; border-radius: 5px; font-size: 1.1rem; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>Welcome to Our Amazing Service</h1>
+        <p>Transform your business with our innovative solutions</p>
+        <button class="cta-button">Get Started Today</button>
+    </div>
+    <div class="container">
+        <h2>Why Choose Us?</h2>
+        <p>We provide exceptional service with cutting-edge technology and dedicated support.</p>
+    </div>
+</body>
+</html>`
+        },
+        portfolio: {
+            name: 'Portfolio',
+            description: 'A personal portfolio template',
+            html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>John Doe - Portfolio</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; line-height: 1.6; }
+        .header { background: #2c3e50; color: white; padding: 2rem; text-align: center; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 2rem; }
+        .project { background: #f8f9fa; padding: 1.5rem; margin: 1rem 0; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>John Doe</h1>
+        <p>Full Stack Developer & Designer</p>
+    </div>
+    <div class="container">
+        <h2>About Me</h2>
+        <p>I'm a passionate developer with 5+ years of experience creating web applications and digital experiences.</p>
+        
+        <h2>Projects</h2>
+        <div class="project">
+            <h3>E-commerce Platform</h3>
+            <p>A modern e-commerce solution built with React and Node.js</p>
         </div>
-        <div class="nested-drop-zone" data-branch="body"><p class="placeholder-text">Content for div...</p></div>
-        <div class="block-content" style="margin-top: 0.5rem;"><label></div></label></div>
-    `,
-            parser: (b, i) => {
-                const idInput = b.querySelector('[data-token="id"]');
-                const clsInput = b.querySelector('[data-token="class"]');
-                const id = idInput ? idInput.value : '';
-                const cls = clsInput ? clsInput.value : '';
-                let attrs = '';
-                if (id) attrs += ` id="${id}"`;
-                if (cls) attrs += ` class="${cls}"`;
-                return `<div${attrs}>\n${parseZone(b.querySelector('[data-branch="body"]'), i + '    ')}${i}</div>`;
-            }
+        <div class="project">
+            <h3>Task Management App</h3>
+            <p>A collaborative task management tool with real-time updates</p>
+        </div>
+    </div>
+</body>
+</html>`
         },
-
-        // =========================================================================
-        // == HTML HEAD ELEMENTS ==
-        // =========================================================================
-        {
-            type: 'title', label: 'Page Title', icon: 'fa-solid fa-t', color: '#73daca',
-            html: () => `<div class="block-content"><label><title></label><input type="text" placeholder="My Awesome Page" data-token="value"><label></title></label></div>`,
-            parser: b => {
-                const input = b.querySelector('[data-token="value"]');
-                return `<title>${input ? input.value : 'Document'}</title>`;
-            }
+        blog: {
+            name: 'Blog Post',
+            description: 'A clean blog post template',
+            html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Blog Post</title>
+    <style>
+        body { font-family: Georgia, serif; margin: 0; padding: 0; background: #fafafa; }
+        .article { max-width: 800px; margin: 2rem auto; background: white; padding: 3rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .meta { color: #666; font-size: 0.9rem; margin-bottom: 2rem; }
+        h1 { color: #333; border-bottom: 3px solid #3498db; padding-bottom: 0.5rem; }
+        p { margin-bottom: 1.5rem; }
+    </style>
+</head>
+<body>
+    <article class="article">
+        <h1>The Future of Web Development</h1>
+        <div class="meta">Published on March 15, 2024 by Jane Smith</div>
+        <p>Web development continues to evolve at a rapid pace. In this post, we'll explore the latest trends and technologies shaping the future of web development.</p>
+        <p>From progressive web apps to serverless architecture, developers have more tools than ever to create amazing user experiences.</p>
+        <h2>Key Trends to Watch</h2>
+        <p>Here are some of the most important trends every web developer should be aware of...</p>
+    </article>
+</body>
+</html>`
         },
-        {
-            type: 'meta_charset', label: 'Meta Charset', icon: 'fa-solid fa-globe', color: '#73daca',
-            html: () => `<div class="block-content"><label><meta charset="UTF-8"></label></div>`,
-            parser: () => `<meta charset="UTF-8">`
+        contact: {
+            name: 'Contact Form',
+            description: 'A contact page with form',
+            html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 2rem; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 1.5rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
+        input, textarea { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; }
+        button { background: #27ae60; color: white; padding: 1rem 2rem; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem; }
+        button:hover { background: #219a52; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Contact Us</h1>
+        <p>We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
+        
+        <form>
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="message">Message</label>
+                <textarea id="message" name="message" rows="5" required></textarea>
+            </div>
+            <button type="submit">Send Message</button>
+        </form>
+    </div>
+</body>
+</html>`
         },
-        {
-            type: 'meta_viewport', label: 'Meta Viewport', icon: 'fa-solid fa-mobile-screen', color: '#73daca',
-            html: () => `<div class="block-content"><label><meta name="viewport" ...></label></div>`,
-            parser: () => `<meta name="viewport" content="width=device-width, initial-scale=1.0">`
-        },
-        {
-            type: 'link_css', label: 'Link CSS', icon: 'fa-solid fa-link', color: '#73daca',
-            html: () => `<div class="block-content"><label><link rel="stylesheet" href="</label><input type="text" placeholder="style.css" data-token="href"><label>"></label></div>`,
-            parser: b => {
-                const input = b.querySelector('[data-token="href"]');
-                return `<link rel="stylesheet" href="${input ? input.value : ''}">`;
-            }
-        },
-
-        // =========================================================================
-        // == HTML BODY CONTENT ==
-        // =========================================================================
-        {
-            type: 'heading', label: 'Heading', icon: 'fa-solid fa-heading', color: '#c0caf5',
-            html: () => `
-        <div class="block-content">
-            <label><</label>
-            <select data-token="level">
-                <option value="h1" selected>h1</option><option value="h2">h2</option><option value="h3">h3</option>
-                <option value="h4">h4</option><option value="h5">h5</option><option value="h6">h6</option>
-            </select>
-            <label>></label>
-            <input type="text" placeholder="Heading Text" data-token="text" style="width: 60%;">
-            <label></...</label>
-        </div>`,
-            parser: b => {
-                const levelInput = b.querySelector('[data-token="level"]');
-                const textInput = b.querySelector('[data-token="text"]');
-                const level = levelInput ? levelInput.value : 'h1';
-                const text = textInput ? textInput.value : '';
-                return `<${level}>${text || 'Heading'}</${level}>`;
-            }
-        },
-        {
-            type: 'paragraph', label: 'Paragraph', icon: 'fa-solid fa-paragraph', color: '#c0caf5',
-            html: () => `<div class="block-content"><label><p></label><input type="text" placeholder="Paragraph text..." data-token="text"><label></p></label></div>`,
-            parser: b => {
-                const input = b.querySelector('[data-token="text"]');
-                return `<p>${input ? input.value : ''}</p>`;
-            }
-        },
-        {
-            type: 'image', label: 'Image', icon: 'fa-solid fa-image', color: '#c0caf5',
-            html: () => `<div class="block-content"><label><img src="</label><input type="text" placeholder="path/to/image.jpg" data-token="src"><label>" alt="</label><input type="text" placeholder="description" data-token="alt"><label>"></label></div>`,
-            parser: b => {
-                const srcInput = b.querySelector('[data-token="src"]');
-                const altInput = b.querySelector('[data-token="alt"]');
-                return `<img src="${srcInput ? srcInput.value : ''}" alt="${altInput ? altInput.value : ''}">`;
-            }
-        },
-        {
-            type: 'link', label: 'Link (Anchor)', icon: 'fa-solid fa-up-right-from-square', color: '#c0caf5',
-            html: () => `<div class="block-content"><label><a href="</label><input type="text" placeholder="https://example.com" data-token="href"><label>"></label><input type="text" placeholder="Link Text" data-token="text"><label></a></label></div>`,
-            parser: b => {
-                const hrefInput = b.querySelector('[data-token="href"]');
-                const textInput = b.querySelector('[data-token="text"]');
-                return `<a href="${hrefInput ? hrefInput.value : '#'}">${textInput ? textInput.value : 'link'}</a>`;
-            }
-        },
-        {
-            type: 'button', label: 'Button', icon: 'fa-solid fa-computer-mouse', color: '#c0caf5',
-            html: () => `<div class="block-content"><label><button id="</label><input type="text" placeholder="myButton" data-token="id"><label>"></label><input type="text" placeholder="Click Me" data-token="text"><label></button></label></div>`,
-            parser: b => {
-                const idInput = b.querySelector('[data-token="id"]');
-                const textInput = b.querySelector('[data-token="text"]');
-                return `<button id="${idInput ? idInput.value : ''}">${textInput ? textInput.value : 'Button'}</button>`;
-            }
-        },
-
-        // =========================================================================
-        // == SCRIPTING (THE BRIDGE BETWEEN HTML AND JS) ==
-        // =========================================================================
-        {
-            type: 'script_src', label: 'Script (Source)', icon: 'fa-solid fa-file-import', color: '#9ece6a',
-            html: () => `<div class="block-content"><label><script defer src="</label><input type="text" placeholder="app.js" data-token="src"><label>"></script></label></div>`,
-            parser: b => {
-                const input = b.querySelector('[data-token="src"]');
-                return `<script defer src="${input ? input.value : ''}"></script>`;
-            }
-        },
-        {
-            type: 'script_inline', label: 'Inline Script', icon: 'fa-brands fa-js', color: '#9ece6a',
-            html: () => `
-                <div class="block-content"><label><script></label></div>
-                <div class="nested-drop-zone" data-branch="body"><p class="placeholder-text">Drop JavaScript blocks here...</p></div>
-                <div class="block-content" style="margin-top: 0.5rem;"><label></script></label></div>`,
-            parser: (b, i) => `<script>\n${parseZone(b.querySelector('[data-branch="body"]'), i + '    ')}${i}</script>`
-        },
-
-        // =========================================================================
-        // == JAVASCRIPT BLOCKS (for use inside an Inline Script block) ==
-        // =========================================================================
-        {
-            type: 'variable', label: 'JS: Declare Variable', icon: 'fa-solid fa-code', color: '#bb9af7',
-            html: () => `<div class="block-content"><label>const</label><input type="text" placeholder="variableName" data-token="name"><label>=</label><input type="text" placeholder='"value"' data-token="value"></div>`,
-            parser: b => {
-                const nameInput = b.querySelector('[data-token="name"]');
-                const valueInput = b.querySelector('[data-token="value"]');
-                return `const ${nameInput ? nameInput.value : 'myVar'} = ${valueInput ? valueInput.value : '""'};`;
-            }
-        },
-        {
-            type: 'log', label: 'JS: Console Log', icon: 'fa-solid fa-terminal', color: '#7dcfff',
-            html: () => `<div class="block-content"><label>console.log(</label><input type="text" placeholder="message" data-token="value"><label>)</label></div>`,
-            parser: b => {
-                const input = b.querySelector('[data-token="value"]');
-                return `console.log(${input ? input.value : "''"});`;
-            }
-        },
-        {
-            type: 'comment', label: 'JS: Comment', icon: 'fa-solid fa-comment-dots', color: '#565f89',
-            html: () => `<div class="block-content"><label>//</label><input type="text" placeholder="Your comment" data-token="value" style="width: 80%;"></div>`,
-            parser: b => {
-                const input = b.querySelector('[data-token="value"]');
-                return `// ${input ? input.value : ''}`;
-            }
-        },
-        {
-            type: 'javascript', label: 'JS: Raw Code', icon: 'fa-solid fa-file-code', color: '#c678dd',
-            html: () => `<div class="block-content"><label>JavaScript Code:</label><textarea placeholder="Enter your code here..." data-token="code" class="themed-textarea"></textarea></div>`,
-            parser: b => {
-                const input = b.querySelector('[data-token="code"]');
-                return input ? input.value : '';
-            }
-        },
-        {
-            type: 'if', label: 'JS: If/Else', icon: 'fa-solid fa-code-branch', color: '#e0af68',
-            html: () => `<div class="block-content"><label>if (</label><input type="text" placeholder="condition" data-token="condition"><label>)</label></div><div class="nested-drop-zone" data-branch="then"><p class="placeholder-text">Then...</p></div><div class="block-content" style="margin-top: 0.5rem;"><label>else</label></div><div class="nested-drop-zone" data-branch="else"><p class="placeholder-text">Else...</p></div>`,
-            parser: (b, i) => {
-                const condInput = b.querySelector('[data-token="condition"]');
-                return `if (${condInput ? condInput.value : 'true'}) {\n${parseZone(b.querySelector('[data-branch="then"]'), i + '    ')}${i}} else {\n${parseZone(b.querySelector('[data-branch="else"]'), i + '    ')}${i}}`;
-            }
-        },
-        {
-            type: 'for_loop', label: 'JS: For Loop', icon: 'fa-solid fa-repeat', color: '#9ece6a',
-            html: () => `<div class="block-content"><label>for (</label><input type="text" placeholder="let i = 0" data-token="init" style="width: 80px;"><label>;</label><input type="text" placeholder="i < 10" data-token="condition" style="width: 60px;"><label>;</label><input type="text" placeholder="i++" data-token="increment" style="width: 40px;"><label>)</label></div><div class="nested-drop-zone" data-branch="body"><p class="placeholder-text">Loop body...</p></div>`,
-            parser: (b, i) => {
-                const initInput = b.querySelector('[data-token="init"]');
-                const condInput = b.querySelector('[data-token="condition"]');
-                const incInput = b.querySelector('[data-token="increment"]');
-                return `for (${initInput ? initInput.value : 'let i=0'}; ${condInput ? condInput.value : 'i<10'}; ${incInput ? incInput.value : 'i++'}) {\n${parseZone(b.querySelector('[data-branch="body"]'), i + '    ')}${i}}`;
-            }
-        },
-        {
-            type: 'function', label: 'JS: Function', icon: 'fa-solid fa-rocket', color: '#73daca',
-            html: () => `<div class="block-content"><label>function</label><input type="text" placeholder="myFunction" data-token="name"><label>(</label><input type="text" placeholder="p1, p2" data-token="params"><label>)</label></div><div class="nested-drop-zone" data-branch="body"><p class="placeholder-text">Function body...</p></div>`,
-            parser: (b, i) => {
-                const nameInput = b.querySelector('[data-token="name"]');
-                const paramsInput = b.querySelector('[data-token="params"]');
-                return `function ${nameInput ? nameInput.value : 'myFunc'}(${paramsInput ? paramsInput.value : ''}) {\n${parseZone(b.querySelector('[data-branch="body"]'), i + '    ')}${i}}`;
-            }
-        },
-        {
-            type: 'get_element', label: 'JS: Get Element By Id', icon: 'fa-solid fa-hand-pointer', color: '#c0caf5',
-            html: () => `<div class="block-content"><label>const</label><input type="text" placeholder="element" data-token="varName"><label>= document.getElementById(</label><input type="text" placeholder="'id'" data-token="id"><label>)</label></div>`,
-            parser: (b) => {
-                const varInput = b.querySelector('[data-token="varName"]');
-                const idInput = b.querySelector('[data-token="id"]');
-                return `const ${varInput ? varInput.value : 'element'} = document.getElementById(${idInput ? idInput.value : "''"});`;
-            }
-        },
-        {
-            type: 'add_listener', label: 'JS: Add Event Listener', icon: 'fa-solid fa-ear-listen', color: '#c0caf5',
-            html: () => `<div class="block-content"><input type="text" placeholder="element" data-token="element"><label>.addEventListener(</label><input type="text" placeholder="'click'" data-token="event"><label>, () => {</label></div><div class="nested-drop-zone" data-branch="body"><p class="placeholder-text">Callback function...</p></div><div class="block-content" style="margin-top: 0.5rem;"><label>})</label></div>`,
-            parser: (b, i) => {
-                const elInput = b.querySelector('[data-token="element"]');
-                const eventInput = b.querySelector('[data-token="event"]');
-                return `${elInput ? elInput.value : 'element'}.addEventListener(${eventInput ? eventInput.value : "'click'"}, () => {\n${parseZone(b.querySelector('[data-branch="body"]'), i + '    ')}${i}});`;
-            }
+        dashboard: {
+            name: 'Dashboard',
+            description: 'A simple dashboard layout',
+            html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f8f9fa; }
+        .header { background: #343a40; color: white; padding: 1rem 2rem; }
+        .main { display: grid; grid-template-columns: 250px 1fr; min-height: calc(100vh - 60px); }
+        .sidebar { background: white; padding: 1rem; border-right: 1px solid #dee2e6; }
+        .content { padding: 2rem; }
+        .card { background: white; padding: 1.5rem; margin-bottom: 1rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: #007bff; color: white; padding: 1.5rem; border-radius: 8px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Dashboard</h1>
+    </div>
+    <div class="main">
+        <div class="sidebar">
+            <h3>Navigation</h3>
+            <p>• Overview</p>
+            <p>• Analytics</p>
+            <p>• Reports</p>
+            <p>• Settings</p>
+        </div>
+        <div class="content">
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>1,234</h3>
+                    <p>Total Users</p>
+                </div>
+                <div class="stat-card">
+                    <h3>567</h3>
+                    <p>Active Sessions</p>
+                </div>
+                <div class="stat-card">
+                    <h3>89%</h3>
+                    <p>Uptime</p>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Recent Activity</h2>
+                <p>Here you can see the latest activity and updates from your application.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>`
         }
-    ];
+    };
+
 
     // --- DOM Element References ---
     const toolboxContainer = document.getElementById('toolbox-items');
     const mainDropZone = document.getElementById('drop-zone');
     const generatedCodeElement = document.getElementById('generated-code');
     const themeSelect = document.getElementById('theme-select');
+    const templateSelect = document.getElementById('template-select');
     const copyButton = document.getElementById('copy-button');
+    const previewButton = document.getElementById('preview-button');
     const workspace = document.getElementById('workspace');
+
+    // NEW: Toolbar and file input references
+    const newButton = document.getElementById('new-button');
+    const openButton = document.getElementById('open-button');
+    const saveButton = document.getElementById('save-button');
+    const exportButton = document.getElementById('export-button');
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.json, .html, .htm';
+    fileInput.style.display = 'none';
+    document.body.appendChild(fileInput);
 
     // =========================================================================
     // == CORE LOGIC ==
     // =========================================================================
 
     const populateToolbox = () => {
-        BLOCK_DEFINITIONS.forEach(def => {
-            const item = document.createElement('div');
-            item.className = 'tool-item';
-            item.draggable = true;
-            item.dataset.type = def.type;
-            item.innerHTML = `
+        toolboxContainer.innerHTML = '';
+        Object.entries(BLOCK_DEFINITIONS).forEach(([groupName, blocks]) => {
+            // Create group container
+            const groupContainer = document.createElement('div');
+            groupContainer.className = 'toolbox-group-container';
+
+            // Group header with chevron
+            const groupHeader = document.createElement('h3');
+            groupHeader.className = 'toolbox-group-header';
+            groupHeader.innerHTML = `<span class="chevron">▶</span> ${groupName.charAt(0).toUpperCase() + groupName.slice(1)} Blocks`;
+            groupHeader.style.cursor = 'pointer';
+
+            // Blocks container
+            const blocksContainer = document.createElement('div');
+            blocksContainer.className = 'toolbox-blocks-container';
+
+            blocks.forEach(def => {
+                const item = document.createElement('div');
+                item.className = 'tool-item';
+                item.draggable = true;
+                item.dataset.type = def.type;
+                item.innerHTML = `
                 <div class="drag-bar" style="background-color: ${def.color};"></div>
                 <div class="drag-grip"><i class="fa-solid fa-grip-vertical"></i></div>
                 <div class="tool-item-content">
                     <i class="${def.icon}" style="color: ${def.color};"></i> ${def.label}
                 </div>`;
-            item.addEventListener('dragstart', e => {
-                e.dataTransfer.setData('application/x-script-block', def.type);
-                item.classList.add('dragging');
-                document.body.classList.add('no-select');
+                item.addEventListener('dragstart', e => {
+                    e.dataTransfer.setData('application/x-script-block', def.type);
+                    item.classList.add('dragging');
+                    document.body.classList.add('no-select');
+                });
+                item.addEventListener('dragend', () => {
+                    item.classList.remove('dragging');
+                    document.body.classList.remove('no-select');
+                });
+                blocksContainer.appendChild(item);
             });
-            item.addEventListener('dragend', () => {
-                item.classList.remove('dragging');
-                document.body.classList.remove('no-select');
+
+            // Collapsing logic
+            groupHeader.addEventListener('click', () => {
+                const isCollapsed = blocksContainer.style.display === 'none';
+                blocksContainer.style.display = isCollapsed ? '' : 'none';
+                groupHeader.querySelector('.chevron').innerHTML = isCollapsed ? '▼' : '▶';
             });
-            toolboxContainer.appendChild(item);
+            // Start expanded
+            blocksContainer.style.display = '';
+            groupHeader.querySelector('.chevron').innerHTML = '▼';
+
+            groupContainer.appendChild(groupHeader);
+            groupContainer.appendChild(blocksContainer);
+            toolboxContainer.appendChild(groupContainer);
         });
     };
 
@@ -310,35 +862,46 @@ ${i}</body>
         element.addEventListener('drop', e => {
             e.preventDefault(); e.stopPropagation();
             element.classList.remove('drag-over');
-
-            if (draggedElement) { // Moving an existing block
+            if (draggedElement) {
                 const originalParent = draggedElement.parentElement;
-                element.insertBefore(draggedElement, dropIndicator);
+                // Only insert if dropIndicator is still present
+                if (dropIndicator.parentNode === element) {
+                    element.insertBefore(draggedElement, dropIndicator);
+                } else {
+                    element.appendChild(draggedElement);
+                }
                 updatePlaceholderVisibility(originalParent);
-            } else { // Dropping a new block from the toolbox
+            } else {
                 const blockType = e.dataTransfer.getData('application/x-script-block');
                 const newBlock = createBlock(blockType);
                 if (newBlock) {
-                    element.insertBefore(newBlock, dropIndicator);
+                    if (dropIndicator.parentNode === element) {
+                        element.insertBefore(newBlock, dropIndicator);
+                    } else {
+                        element.appendChild(newBlock);
+                    }
                 }
             }
-
             updatePlaceholderVisibility(element);
             dropIndicator.remove();
             generateCode();
         });
     };
-
+    const findBlockDefinition = (type) => {
+        for (const group in BLOCK_DEFINITIONS) {
+            const definition = BLOCK_DEFINITIONS[group].find(d => d.type === type);
+            if (definition) return definition;
+        }
+        return null;
+    };
     const createBlock = (type) => {
-        const definition = BLOCK_DEFINITIONS.find(d => d.type === type);
+        const definition = findBlockDefinition(type);
         if (!definition) return null;
         const block = document.createElement('div');
         block.className = 'script-block'; block.dataset.type = type; block.draggable = true;
         block.style.borderLeft = `4px solid ${definition.color}`;
         block.innerHTML = `<div class="block-header"><i class="${definition.icon}"></i><span>${definition.label}</span></div>${definition.html()}<button class="delete-block-btn" title="Delete Block"><i class="fa-solid fa-xmark"></i></button>`;
-
         block.querySelectorAll('.nested-drop-zone').forEach(addDragAndDropListeners);
-
         block.addEventListener('dragstart', e => {
             e.stopPropagation();
             draggedElement = block;
@@ -346,7 +909,6 @@ ${i}</body>
             setTimeout(() => block.classList.add('is-dragging'), 0);
             document.body.classList.add('no-select');
         });
-
         block.addEventListener('dragend', e => {
             e.stopPropagation();
             draggedElement?.classList.remove('is-dragging');
@@ -356,7 +918,6 @@ ${i}</body>
         });
         return block;
     };
-
     const getDragAfterElement = (container, y) => {
         const draggableElements = [...container.querySelectorAll(':scope > .script-block:not(.is-dragging)')];
         return draggableElements.reduce((closest, child) => {
@@ -364,12 +925,9 @@ ${i}</body>
             const offset = y - box.top - box.height / 2;
             if (offset < 0 && offset > closest.offset) {
                 return { offset: offset, element: child };
-            } else {
-                return closest;
-            }
+            } else { return closest; }
         }, { offset: Number.NEGATIVE_INFINITY }).element;
     };
-
     const updatePlaceholderVisibility = (zone) => {
         if (!zone || !zone.matches('.drop-zone, .nested-drop-zone')) return;
         const placeholder = zone.querySelector('.placeholder-text');
@@ -378,22 +936,324 @@ ${i}</body>
             placeholder.style.display = hasBlocks ? 'none' : 'block';
         }
     };
-
     const parseZone = (zone, indent = '') => {
         let code = '';
         if (!zone) return code;
         const blocks = zone.querySelectorAll(':scope > .script-block');
         blocks.forEach(block => {
-            const definition = BLOCK_DEFINITIONS.find(d => d.type === block.dataset.type);
+            const definition = findBlockDefinition(block.dataset.type);
             if (definition) code += indent + definition.parser(block, indent) + '\n';
         });
         return code;
     };
-
     const generateCode = () => {
         const generated = parseZone(mainDropZone);
-        generatedCodeElement.textContent = generated.trim() === '' ? '// Your code will appear here...' : generated;
+        generatedCodeElement.textContent = generated.trim() === '' ? '// Your generated code will appear here...' : generated;
     };
+
+    // =========================================================================
+    // == HTML IMPORT LOGIC ==
+    // =========================================================================
+    const parseHtmlAndBuildWorkspace = (htmlString) => {
+        mainDropZone.innerHTML = '<p class="placeholder-text">Drop blocks here to start building...</p>';
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlString, 'text/html');
+        const rootNode = doc.documentElement;
+        if (!rootNode) {
+            alert('Could not parse HTML. Is it a valid HTML file?');
+            return;
+        }
+        buildBlocksFromNode(rootNode, mainDropZone);
+        updatePlaceholderVisibility(mainDropZone);
+        generateCode();
+    };
+    const buildBlocksFromNode = (parentNode, targetDropZone) => {
+        if (!parentNode || !parentNode.childNodes) return;
+        parentNode.childNodes.forEach(childNode => {
+            // Ignore comments and empty/whitespace-only text nodes
+            if (childNode.nodeType === Node.COMMENT_NODE ||
+                (childNode.nodeType === Node.TEXT_NODE && !childNode.textContent.trim())) {
+                return;
+            }
+
+            let matchedDefinition = null;
+            let importResult = null;
+
+            // Iterate through all defined blocks to find a matching importer
+            for (const group in BLOCK_DEFINITIONS) {
+                for (const definition of BLOCK_DEFINITIONS[group]) {
+                    if (definition.importer) {
+                        const result = definition.importer(childNode);
+                        if (result) {
+                            matchedDefinition = definition;
+                            importResult = result;
+                            break;
+                        }
+                    }
+                }
+                if (matchedDefinition) break;
+            }
+
+            if (matchedDefinition) {
+                const newBlockElement = createBlock(importResult.type);
+                if (!newBlockElement) return;
+
+                // Populate tokens (inputs, selects, etc.)
+                if (importResult.tokens) {
+                    Object.entries(importResult.tokens).forEach(([tokenName, value]) => {
+                        const input = newBlockElement.querySelector(`[data-token="${tokenName}"]`);
+                        if (input) {
+                            input.value = value || '';
+                        }
+                    });
+                }
+
+                targetDropZone.appendChild(newBlockElement);
+                updatePlaceholderVisibility(targetDropZone);
+
+                // If the imported block is a container, recursively build its children
+                if (importResult.branches) {
+                    Object.entries(importResult.branches).forEach(([branchName, sourceNode]) => {
+                        const nestedDropZone = newBlockElement.querySelector(`[data-branch="${branchName}"]`);
+                        if (nestedDropZone) {
+                            buildBlocksFromNode(sourceNode, nestedDropZone);
+                        }
+                    });
+                }
+            } else {
+                // Try to create a custom block as fallback
+                let customBlock = null;
+                
+                // Try custom importers in order of preference
+                const customImporters = [
+                    BLOCK_DEFINITIONS.custom.find(def => def.type === 'raw_text'),
+                    BLOCK_DEFINITIONS.custom.find(def => def.type === 'custom_html'),
+                    BLOCK_DEFINITIONS.custom.find(def => def.type === 'custom_css'),
+                    BLOCK_DEFINITIONS.custom.find(def => def.type === 'custom_javascript')
+                ];
+                
+                for (const customDef of customImporters) {
+                    if (customDef && customDef.importer) {
+                        const result = customDef.importer(childNode);
+                        if (result) {
+                            customBlock = result;
+                            matchedDefinition = customDef;
+                            break;
+                        }
+                    }
+                }
+                
+                if (customBlock) {
+                    const newBlockElement = createBlock(customBlock.type);
+                    if (newBlockElement) {
+                        // Populate tokens
+                        if (customBlock.tokens) {
+                            Object.entries(customBlock.tokens).forEach(([tokenName, value]) => {
+                                const input = newBlockElement.querySelector(`[data-token="${tokenName}"]`);
+                                if (input) {
+                                    input.value = value || '';
+                                    // Update closing tag name for custom HTML blocks
+                                    if (tokenName === 'tagname') {
+                                        const closingTagSpan = newBlockElement.querySelector('.closing-tag-name');
+                                        if (closingTagSpan) {
+                                            closingTagSpan.textContent = value || 'tagname';
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                        
+                        targetDropZone.appendChild(newBlockElement);
+                        updatePlaceholderVisibility(targetDropZone);
+                        
+                        // Handle nested content for custom HTML blocks
+                        if (customBlock.branches) {
+                            Object.entries(customBlock.branches).forEach(([branchName, sourceNode]) => {
+                                const nestedDropZone = newBlockElement.querySelector(`[data-branch="${branchName}"]`);
+                                if (nestedDropZone) {
+                                    buildBlocksFromNode(sourceNode, nestedDropZone);
+                                }
+                            });
+                        }
+                    }
+                } else {
+                    console.warn('No importer found for node:', childNode);
+                }
+            }
+        });
+    };
+
+    // =========================================================================
+    // == NEW: WORKSPACE STATE MANAGEMENT ==
+    // =========================================================================
+
+    // NEW: Save and load workspace state as JSON
+    const saveWorkspaceState = () => {
+        const blocks = [];
+        const scriptBlocks = mainDropZone.querySelectorAll(':scope > .script-block');
+        
+        scriptBlocks.forEach(block => {
+            const blockData = extractBlockData(block);
+            if (blockData) {
+                blocks.push(blockData);
+            }
+        });
+        
+        return {
+            version: '2.0',
+            blocks: blocks,
+            timestamp: new Date().toISOString()
+        };
+    };
+
+    const extractBlockData = (blockElement) => {
+        const type = blockElement.dataset.type;
+        const definition = findBlockDefinition(type);
+        if (!definition) return null;
+
+        const blockData = {
+            type: type,
+            tokens: {},
+            branches: {}
+        };
+
+        // Extract token values (inputs, selects, textareas)
+        const tokenElements = blockElement.querySelectorAll('[data-token]');
+        tokenElements.forEach(element => {
+            const tokenName = element.getAttribute('data-token');
+            blockData.tokens[tokenName] = element.value || '';
+        });
+
+        // Extract nested blocks from branches
+        const branchElements = blockElement.querySelectorAll(':scope > .nested-drop-zone[data-branch]');
+        branchElements.forEach(branchElement => {
+            const branchName = branchElement.getAttribute('data-branch');
+            const nestedBlocks = [];
+            
+            const nestedScriptBlocks = branchElement.querySelectorAll(':scope > .script-block');
+            nestedScriptBlocks.forEach(nestedBlock => {
+                const nestedData = extractBlockData(nestedBlock);
+                if (nestedData) {
+                    nestedBlocks.push(nestedData);
+                }
+            });
+            
+            blockData.branches[branchName] = nestedBlocks;
+        });
+
+        return blockData;
+    };
+
+    const loadWorkspaceState = (stateData) => {
+        try {
+            // Clear workspace
+            mainDropZone.innerHTML = '<p class="placeholder-text">Drop blocks here to start building...</p>';
+            
+            if (!stateData.blocks || !Array.isArray(stateData.blocks)) {
+                throw new Error('Invalid workspace data format');
+            }
+
+            // Rebuild blocks
+            stateData.blocks.forEach(blockData => {
+                const blockElement = createBlockFromData(blockData);
+                if (blockElement) {
+                    mainDropZone.appendChild(blockElement);
+                }
+            });
+
+            updatePlaceholderVisibility(mainDropZone);
+            generateCode();
+            
+        } catch (error) {
+            console.error('Failed to load workspace state:', error);
+            alert(`Failed to load workspace: ${error.message}`);
+        }
+    };
+
+    const createBlockFromData = (blockData) => {
+        const blockElement = createBlock(blockData.type);
+        if (!blockElement) return null;
+
+        // Set token values
+        if (blockData.tokens) {
+            Object.entries(blockData.tokens).forEach(([tokenName, value]) => {
+                const tokenElement = blockElement.querySelector(`[data-token="${tokenName}"]`);
+                if (tokenElement) {
+                    tokenElement.value = value;
+                }
+            });
+        }
+
+        // Rebuild nested branches
+        if (blockData.branches) {
+            Object.entries(blockData.branches).forEach(([branchName, nestedBlocks]) => {
+                const branchElement = blockElement.querySelector(`[data-branch="${branchName}"]`);
+                if (branchElement && Array.isArray(nestedBlocks)) {
+                    nestedBlocks.forEach(nestedBlockData => {
+                        const nestedBlockElement = createBlockFromData(nestedBlockData);
+                        if (nestedBlockElement) {
+                            branchElement.appendChild(nestedBlockElement);
+                        }
+                    });
+                    updatePlaceholderVisibility(branchElement);
+                }
+            });
+        }
+
+        return blockElement;
+    };
+
+    // =========================================================================
+    // == NEW: DEFAULT WORKSPACE AND FILE MANAGEMENT ==
+    // =========================================================================
+
+    /**
+     * Clears the main drop zone and populates it with a basic HTML structure.
+     */
+    const createDefaultWorkspace = () => {
+        mainDropZone.innerHTML = ''; // Clear existing content
+
+        // Create HTML Document block
+        const docBlock = createBlock('html_document');
+        mainDropZone.appendChild(docBlock);
+
+        // Wait for DOM to update before querying nested zones
+        setTimeout(() => {
+            // Get head and body drop zones
+            const headZone = docBlock.querySelector('[data-branch="head"]');
+            const bodyZone = docBlock.querySelector('[data-branch="body"]');
+
+            // FIX 1: REMOVED redundant listener attachments.
+            // The `createBlock` function already adds these listeners to any `.nested-drop-zone`.
+            // Attaching them a second time caused the drop handler to fire twice, creating two blocks.
+            // addDragAndDropListeners(headZone); // This was causing the double-drop bug
+            // addDragAndDropListeners(bodyZone); // This was also causing the double-drop bug
+
+            // Populate Head
+            const metaCharset = createBlock('meta_charset');
+            const metaViewport = createBlock('meta_viewport');
+            const title = createBlock('title');
+            const titleInput = title.querySelector('[data-token="value"]');
+            if (titleInput) {
+                titleInput.value = 'My FlowScript Page';
+            }
+            headZone.append(metaCharset, metaViewport, title);
+
+            // Populate Body
+            const heading = createBlock('heading');
+            heading.querySelector('[data-token="text"]').value = 'Welcome to FlowScript!';
+            const paragraph = createBlock('paragraph');
+            paragraph.querySelector('[data-token="text"]').value = 'This is a page built with the visual block editor. Drag blocks from the toolbox to get started.';
+            bodyZone.append(heading, paragraph);
+
+            // Update UI
+            updatePlaceholderVisibility(mainDropZone);
+            updatePlaceholderVisibility(headZone);
+            updatePlaceholderVisibility(bodyZone);
+            generateCode();
+        }, 0);
+    };
+
 
     // --- EVENT LISTENERS INITIALIZATION ---
     populateToolbox();
@@ -401,8 +1261,90 @@ ${i}</body>
 
     themeSelect.addEventListener('change', e => document.documentElement.setAttribute('data-theme', e.target.value));
 
+    // Template selector event listener
+    templateSelect.addEventListener('change', (e) => {
+        const selectedTemplate = e.target.value;
+        if (!selectedTemplate) return;
+
+        // Check if workspace has content
+        const hasContent = mainDropZone.querySelector('.script-block');
+        
+        if (hasContent) {
+            const confirmed = confirm(
+                `Loading the "${TEMPLATE_DEFINITIONS[selectedTemplate].name}" template will overwrite your current workspace.\n\n` +
+                `Are you sure you want to continue? Your current work will be lost.`
+            );
+            
+            if (!confirmed) {
+                // Reset the dropdown to empty selection
+                e.target.value = '';
+                return;
+            }
+        }
+
+        // Load the selected template
+        loadTemplate(selectedTemplate);
+        
+        // Reset the dropdown to show "Select Template..." again
+        e.target.value = '';
+    });
+
+    /**
+     * Load a template by parsing its HTML and building the workspace
+     */
+    const loadTemplate = (templateKey) => {
+        const template = TEMPLATE_DEFINITIONS[templateKey];
+        if (!template) {
+            alert('Template not found!');
+            return;
+        }
+
+        try {
+            // Clear workspace and load template
+            mainDropZone.innerHTML = '<p class="placeholder-text">Drop blocks here to start building...</p>';
+            
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(template.html, 'text/html');
+            const rootNode = doc.documentElement;
+            
+            if (!rootNode) {
+                throw new Error('Could not parse template HTML');
+            }
+            
+            buildBlocksFromNode(rootNode, mainDropZone);
+            updatePlaceholderVisibility(mainDropZone);
+            generateCode();
+            
+            // Show success message
+            const successMessage = document.createElement('span');
+            successMessage.style.color = 'var(--accent-color)';
+            successMessage.style.fontSize = '0.9rem';
+            successMessage.style.marginLeft = '0.5rem';
+            successMessage.textContent = `✓ ${template.name} loaded`;
+            templateSelect.parentElement.appendChild(successMessage);
+            
+            // Remove success message after 3 seconds
+            setTimeout(() => {
+                if (successMessage.parentElement) {
+                    successMessage.remove();
+                }
+            }, 3000);
+            
+        } catch (error) {
+            console.error('Failed to load template:', error);
+            alert(`Failed to load template: ${error.message}`);
+        }
+    };
+
     workspace.addEventListener('input', e => {
-        if (e.target.matches('input[type="text"], textarea')) {
+        if (e.target.matches('input[type="text"], textarea, select')) {
+            // Handle custom HTML block tagname updates
+            if (e.target.dataset.token === 'tagname') {
+                const closingTagSpan = e.target.closest('.script-block').querySelector('.closing-tag-name');
+                if (closingTagSpan) {
+                    closingTagSpan.textContent = e.target.value || 'tagname';
+                }
+            }
             generateCode();
         }
     });
@@ -425,4 +1367,166 @@ ${i}</body>
             setTimeout(() => { copyButton.innerHTML = originalHTML; }, 1500);
         });
     });
+
+    previewButton.addEventListener('click', () => {
+        const generatedCode = generatedCodeElement.textContent;
+        if (generatedCode.trim() === '' || generatedCode === '// Your generated code will appear here...') {
+            alert('No code to preview! Please add some blocks to the workspace first.');
+            return;
+        }
+
+        // Create a new window for the preview
+        const previewWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+        
+        if (previewWindow) {
+            // Write the generated HTML to the new window
+            previewWindow.document.open();
+            previewWindow.document.write(generatedCode);
+            previewWindow.document.close();
+            
+            // Set the title of the preview window
+            previewWindow.document.title = 'FlowScript Preview';
+            
+            // Add some basic styling to make it clear this is a preview
+            const style = previewWindow.document.createElement('style');
+            style.textContent = `
+                body::before {
+                    content: "🔍 FlowScript Preview";
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    background: rgba(0, 0, 0, 0.8);
+                    color: white;
+                    padding: 0.5rem;
+                    text-align: center;
+                    font-family: system-ui, sans-serif;
+                    font-size: 0.9rem;
+                    z-index: 10000;
+                    border-bottom: 2px solid #007bff;
+                }
+                body {
+                    margin-top: 2.5rem;
+                }
+            `;
+            previewWindow.document.head.appendChild(style);
+        } else {
+            alert('Preview window was blocked by your browser. Please allow popups for this site and try again.');
+        }
+    });
+
+    // NEW: Toolbar Event Listeners
+    newButton.addEventListener('click', () => {
+        if (mainDropZone.querySelector('.script-block')) {
+            if (confirm('Are you sure you want to start a new file? Your current work will be lost.')) {
+                createDefaultWorkspace();
+            }
+        } else {
+            createDefaultWorkspace();
+        }
+    });
+
+    openButton.addEventListener('click', () => {
+        if (mainDropZone.querySelector('.script-block')) {
+            if (!confirm('This will replace your current workspace. Are you sure?')) {
+                return;
+            }
+        }
+        fileInput.click();
+    });
+
+    saveButton.addEventListener('click', () => {
+        // Check if there are blocks to save
+        const hasBlocks = mainDropZone.querySelector('.script-block');
+        if (!hasBlocks) {
+            alert('No blocks to save! Please add some blocks to the workspace first.');
+            return;
+        }
+
+        // Save workspace state as JSON
+        const workspaceState = saveWorkspaceState();
+        const jsonString = JSON.stringify(workspaceState, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'flowscript-workspace.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        // Show success message
+        const originalText = saveButton.innerHTML;
+        saveButton.innerHTML = '<i class="fa-solid fa-check"></i> Saved!';
+        setTimeout(() => {
+            saveButton.innerHTML = originalText;
+        }, 2000);
+    });
+
+    exportButton.addEventListener('click', () => {
+        const codeToExport = generatedCodeElement.textContent;
+        if (codeToExport.trim() === '' || codeToExport === '// Your generated code will appear here...') {
+            alert('No code to export! Please add some blocks to the workspace first.');
+            return;
+        }
+
+        const blob = new Blob([codeToExport], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'flowscript-export.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        // Show success message
+        const originalText = exportButton.innerHTML;
+        exportButton.innerHTML = '<i class="fa-solid fa-check"></i> Exported!';
+        setTimeout(() => {
+            exportButton.innerHTML = originalText;
+        }, 2000);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const fileContent = event.target.result;
+            try {
+                // Check file extension to determine how to process it
+                const fileName = file.name.toLowerCase();
+                
+                if (fileName.endsWith('.json')) {
+                    // Load as workspace state
+                    const workspaceData = JSON.parse(fileContent);
+                    loadWorkspaceState(workspaceData);
+                } else if (fileName.endsWith('.html') || fileName.endsWith('.htm')) {
+                    // Load as HTML and try to parse into blocks
+                    parseHtmlAndBuildWorkspace(fileContent);
+                } else {
+                    alert('Unsupported file type. Please select a .json, .html, or .htm file.');
+                    return;
+                }
+            } catch (error) {
+                console.error("Failed to load file:", error);
+                if (file.name.toLowerCase().endsWith('.json')) {
+                    alert("Failed to load workspace file. The file may be corrupted or in an invalid format.");
+                } else {
+                    alert("An error occurred while loading the HTML file. Check the console for details.");
+                }
+            }
+        };
+        reader.onerror = () => {
+            alert('Error reading file.');
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+    });
+
+    // NEW: Initialize with the default workspace on page load
+    createDefaultWorkspace();
 });

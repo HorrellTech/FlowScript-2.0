@@ -3,10 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlowScript 2.0 - Modular Visual JS</title>
+    <title>FlowScript 2.0 - Modular Visual Builder</title>
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
+    
+    <!-- ADDED: Styles for the new Toolbar -->
+    <style>
+        .toolbar {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-left: 2rem;
+        }
+        .toolbar-button {
+            background-color: var(--color-bg-panel);
+            color: var(--color-text-primary);
+            border: 1px solid var(--color-border);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .toolbar-button:hover {
+            background-color: var(--color-primary);
+            color: var(--color-bg);
+        }
+        .toolbar-button i {
+            font-size: 1em;
+        }
+    </style>
+    
     <script src="app.js" defer></script>
 </head>
 <body>
@@ -14,13 +45,50 @@
     <div class="app-container">
         <header class="app-header">
             <h1><i class="fa-solid fa-sitemap"></i> FlowScript 2.0</h1>
-            <div class="theme-switcher">
-                <label for="theme-select">Theme:</label>
-                <select id="theme-select">
-                    <option value="dark">Dark</option>
-                    <option value="light">Light</option>
-                    <option value="cyber">Cyber</option>
-                </select>
+            
+            <!-- NEW: File Management Toolbar -->
+            <div class="toolbar">
+                <button id="new-button" class="toolbar-button" title="Clear workspace and start a new file">
+                    <i class="fa-solid fa-file"></i> New
+                </button>
+                <button id="open-button" class="toolbar-button" title="Open an HTML file into the workspace">
+                    <i class="fa-solid fa-folder-open"></i> Open
+                </button>
+                <button id="save-button" class="toolbar-button" title="Save workspace as JSON file">
+                    <i class="fa-solid fa-save"></i> Save Workspace
+                </button>
+                <button id="export-button" class="toolbar-button" title="Export generated HTML code">
+                    <i class="fa-solid fa-download"></i> Export HTML
+                </button>
+            </div>
+
+            <div class="header-controls">
+                <div class="theme-switcher">
+                    <label for="theme-select">Theme:</label>
+                    <select id="theme-select">
+                        <option value="dark">Dark</option>
+                        <option value="light">Light</option>
+                        <option value="cyber">Cyber</option>
+                        <option value="neon">Neon</option>
+                        <option value="retro">Retro</option>
+                        <option value="forest">Forest</option>
+                        <option value="ocean">Ocean</option>
+                        <option value="sunset">Sunset</option>
+                        <option value="arctic">Arctic</option>
+                    </select>
+                </div>
+                <div class="template-selector">
+                    <label for="template-select">Template:</label>
+                    <select id="template-select">
+                        <option value="">Select Template...</option>
+                        <option value="blank">Blank Page</option>
+                        <option value="landing">Landing Page</option>
+                        <option value="portfolio">Portfolio</option>
+                        <option value="blog">Blog Post</option>
+                        <option value="contact">Contact Form</option>
+                        <option value="dashboard">Dashboard</option>
+                    </select>
+                </div>
             </div>
         </header>
 
@@ -37,19 +105,22 @@
             <section id="workspace">
                 <h2>Workspace</h2>
                 <div id="drop-zone" class="drop-zone">
-                    <p class="placeholder-text">Drag blocks from the toolbox here to start building your script.</p>
+                    <p class="placeholder-text">Drag blocks from the toolbox here to start building your page.</p>
                 </div>
             </section>
 
             <!-- OUTPUT PANEL: Displays the generated code -->
             <aside id="output-panel">
-                <h2>Generated JavaScript</h2>
+                <h2>Generated Code</h2>
                 <div class="code-header">
                     <button id="copy-button">
                         <i class="fa-solid fa-copy"></i> Copy Code
                     </button>
+                    <button id="preview-button">
+                        <i class="fa-solid fa-eye"></i> Preview
+                    </button>
                 </div>
-                <pre class="code-preview"><code id="generated-code">// Your code will appear here...</code></pre>
+                <pre class="code-preview"><code id="generated-code">// Your generated code will appear here...</code></pre>
             </aside>
         </main>
     </div>

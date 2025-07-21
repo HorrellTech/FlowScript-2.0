@@ -43,6 +43,84 @@
     --drop-zone-hover: rgba(255, 0, 255, 0.2);
 }
 
+[data-theme="neon"] {
+    --bg-color: #0a0a0a;
+    --surface-color: #1a1a1a;
+    --text-color: #00ff41;
+    --text-muted-color: #00cc33;
+    --primary-color: #ff0080;
+    --accent-color: #00ffff;
+    --border-color: #00ff41;
+    --shadow-color: rgba(0, 255, 65, 0.3);
+    --drop-zone-bg: rgba(0, 255, 65, 0.05);
+    --drop-zone-hover: rgba(255, 0, 128, 0.2);
+}
+
+[data-theme="retro"] {
+    --bg-color: #2d1b69;
+    --surface-color: #4a2c85;
+    --text-color: #ffd700;
+    --text-muted-color: #ffb347;
+    --primary-color: #ff6b9d;
+    --accent-color: #00d4aa;
+    --border-color: #8a2be2;
+    --shadow-color: rgba(255, 215, 0, 0.2);
+    --drop-zone-bg: rgba(255, 215, 0, 0.05);
+    --drop-zone-hover: rgba(255, 107, 157, 0.2);
+}
+
+[data-theme="forest"] {
+    --bg-color: #1a2f1a;
+    --surface-color: #2d4a2d;
+    --text-color: #90ee90;
+    --text-muted-color: #6b8e6b;
+    --primary-color: #32cd32;
+    --accent-color: #98fb98;
+    --border-color: #228b22;
+    --shadow-color: rgba(50, 205, 50, 0.2);
+    --drop-zone-bg: rgba(144, 238, 144, 0.05);
+    --drop-zone-hover: rgba(50, 205, 50, 0.2);
+}
+
+[data-theme="ocean"] {
+    --bg-color: #0f1419;
+    --surface-color: #1e3a5f;
+    --text-color: #87ceeb;
+    --text-muted-color: #4682b4;
+    --primary-color: #00bfff;
+    --accent-color: #40e0d0;
+    --border-color: #1e90ff;
+    --shadow-color: rgba(0, 191, 255, 0.2);
+    --drop-zone-bg: rgba(135, 206, 235, 0.05);
+    --drop-zone-hover: rgba(0, 191, 255, 0.2);
+}
+
+[data-theme="sunset"] {
+    --bg-color: #2c1810;
+    --surface-color: #4a2c1a;
+    --text-color: #ffa500;
+    --text-muted-color: #cd853f;
+    --primary-color: #ff4500;
+    --accent-color: #ffd700;
+    --border-color: #ff6347;
+    --shadow-color: rgba(255, 165, 0, 0.2);
+    --drop-zone-bg: rgba(255, 165, 0, 0.05);
+    --drop-zone-hover: rgba(255, 69, 0, 0.2);
+}
+
+[data-theme="arctic"] {
+    --bg-color: #f0f8ff;
+    --surface-color: #ffffff;
+    --text-color: #2f4f4f;
+    --text-muted-color: #708090;
+    --primary-color: #4169e1;
+    --accent-color: #00ced1;
+    --border-color: #b0c4de;
+    --shadow-color: rgba(65, 105, 225, 0.1);
+    --drop-zone-bg: rgba(176, 196, 222, 0.1);
+    --drop-zone-hover: rgba(65, 105, 225, 0.2);
+}
+
 /* --- GENERAL STYLES --- */
 * {
     box-sizing: border-box;
@@ -82,12 +160,40 @@ body {
     margin-right: 0.5rem;
 }
 
-.theme-switcher select {
+.header-controls {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.theme-switcher,
+.template-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.theme-switcher label,
+.template-selector label {
+    font-weight: 500;
+    color: var(--text-color);
+    white-space: nowrap;
+}
+
+.theme-switcher select,
+.template-selector select {
     background-color: var(--bg-color);
     color: var(--text-color);
     border: 1px solid var(--border-color);
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
+    min-width: 120px;
+}
+
+.theme-switcher select:focus,
+.template-selector select:focus {
+    outline: 1px solid var(--primary-color);
+    border-color: var(--primary-color);
 }
 
 .main-content {
@@ -225,7 +331,9 @@ h2 {
     color: var(--text-color);
 }
 
-.script-block input[type="text"] {
+.script-block input[type="text"],
+.script-block textarea,
+.script-block select {
     background-color: var(--bg-color);
     color: var(--text-color);
     border: 1px solid var(--border-color);
@@ -234,8 +342,35 @@ h2 {
     font-family: var(--font-code);
 }
 
-.script-block input[type="text"]:focus {
+.script-block input[type="text"]:focus,
+.script-block textarea:focus,
+.script-block select:focus {
     outline: 1px solid var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.script-block textarea {
+    min-height: 80px;
+    min-width: 200px;
+    resize: vertical;
+    font-family: var(--font-code);
+}
+
+.themed-textarea {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-family: var(--font-code);
+    min-height: 80px;
+    min-width: 200px;
+    resize: vertical;
+}
+
+.themed-textarea:focus {
+    outline: 1px solid var(--primary-color);
+    border-color: var(--primary-color);
 }
 
 .delete-block-btn {
@@ -262,33 +397,59 @@ h2 {
 /* INDENTING / NESTING STYLES */
 .nested-drop-zone {
     margin-top: 1rem;
-    padding-top: 1rem;
+    padding: 1rem;
     padding-left: 1.5rem;
     border-left: 2px solid var(--border-color);
+    border: 2px dashed var(--border-color);
+    border-radius: 5px;
+    background-color: var(--drop-zone-bg);
     min-height: 50px;
+    transition: background-color 0.2s, border-color 0.2s;
 }
 
 .nested-drop-zone.drag-over {
     background-color: var(--drop-zone-hover);
-    /* Use the same hover color as main drop zone */
     border-color: var(--primary-color);
-    /* Highlight border */
+}
+
+.drop-zone-label {
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: var(--text-muted-color);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 /* --- OUTPUT PANEL --- */
-#copy-button {
+.code-header {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+#copy-button,
+#preview-button {
     background-color: var(--primary-color);
     color: var(--bg-color);
     border: none;
     padding: 0.5rem 1rem;
     border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.2s;
-    margin-bottom: 1rem;
+    transition: background-color 0.2s, opacity 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
 }
 
-#copy-button:hover {
+#copy-button:hover,
+#preview-button:hover {
     opacity: 0.9;
+}
+
+#preview-button {
+    background-color: var(--accent-color);
 }
 
 #generated-code {
@@ -355,4 +516,27 @@ body.no-select {
     to {
         opacity: 1;
     }
+}
+
+#toolbox-items .toolbox-group-header {
+    color: var(--text-muted-color);
+    font-size: 0.9em;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin: 1.5rem 0 0.75rem 0.5rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#toolbox-items .toolbox-group-header:first-of-type {
+    margin-top: 0.5rem;
+}
+
+.toolbox-group-header .chevron {
+    display: inline-block;
+    width: 1em;
+    transition: transform 0.2s;
+}
+.toolbox-group-container {
+    margin-bottom: 1em;
 }
