@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlowScript 2.0 - Modular Visual Builder</title>
+    <title>FlowScript 2.0 - Modular Visual Website Prototyper</title>
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <!-- CodeMirror CSS -->
@@ -97,6 +97,59 @@
             </div>
 
             <div class="header-controls">
+                <!-- Mobile dropdown menu button (only visible in mobile mode) -->
+                <div class="mobile-dropdown-container">
+                    <button id="mobile-menu-btn" class="mobile-menu-btn" title="Menu">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div id="mobile-dropdown" class="mobile-dropdown">
+                        <div class="mobile-dropdown-section">
+                            <h4>File Management</h4>
+                            <button id="mobile-new-btn" class="mobile-dropdown-item">
+                                <i class="fa-solid fa-file"></i> New
+                            </button>
+                            <button id="mobile-open-btn" class="mobile-dropdown-item">
+                                <i class="fa-solid fa-folder-open"></i> Open
+                            </button>
+                            <button id="mobile-save-btn" class="mobile-dropdown-item">
+                                <i class="fa-solid fa-save"></i> Save Workspace
+                            </button>
+                            <button id="mobile-export-btn" class="mobile-dropdown-item">
+                                <i class="fa-solid fa-download"></i> Export HTML
+                            </button>
+                        </div>
+                        <div class="mobile-dropdown-section">
+                            <h4>Theme</h4>
+                            <select id="mobile-theme-select" class="mobile-dropdown-select">
+                                <option value="dark">Dark</option>
+                                <option value="light">Light</option>
+                                <option value="cyber">Cyber</option>
+                                <option value="neon">Neon</option>
+                                <option value="retro">Retro</option>
+                                <option value="forest">Forest</option>
+                                <option value="ocean">Ocean</option>
+                                <option value="sunset">Sunset</option>
+                                <option value="arctic">Arctic</option>
+                            </select>
+                        </div>
+                        <div class="mobile-dropdown-section">
+                            <h4>Templates</h4>
+                            <select id="mobile-template-select" class="mobile-dropdown-select">
+                                <option value="">Select Template...</option>
+                                <option value="blank">Blank Page</option>
+                                <option value="landing">Landing Page</option>
+                                <option value="portfolio">Portfolio</option>
+                                <option value="blog">Blog Post</option>
+                                <option value="contact">Contact Form</option>
+                                <option value="dashboard">Dashboard</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="mobile-toggle" class="mobile-toggle-btn" title="Toggle mobile view">
+                    <i class="fa-solid fa-mobile-screen"></i>
+                </button>
                 <div class="theme-switcher">
                     <label for="theme-select">Theme:</label>
                     <select id="theme-select">
@@ -123,6 +176,12 @@
                         <option value="dashboard">Dashboard</option>
                     </select>
                 </div>
+                <!-- Buy Me A Coffee button to the right of zoom controls -->
+                <a href="https://www.buymeacoffee.com/SynKrown" target="_blank" class="bmc-button"
+                    style="margin-left:16px;vertical-align:middle;display:inline-block;">
+                    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="40"
+                        style="vertical-align:middle;">
+                </a>
             </div>
         </header>
 

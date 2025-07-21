@@ -668,3 +668,402 @@ body.no-select {
 .toolbox-group-container {
     margin-bottom: 1em;
 }
+
+/* --- MOBILE FUNCTIONALITY --- */
+.mobile-toggle-btn {
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    transition: all 0.3s ease;
+    margin-right: 1rem;
+}
+
+.mobile-toggle-btn:hover {
+    background-color: var(--primary-color);
+    color: var(--bg-color);
+    transform: scale(1.05);
+}
+
+.mobile-toggle-btn.active {
+    background-color: var(--accent-color);
+    color: var(--bg-color);
+    box-shadow: 0 0 10px var(--shadow-color);
+}
+
+/* Mobile dropdown menu styles */
+.mobile-dropdown-container {
+    position: relative;
+    display: none; /* Hidden by default, shown only in mobile mode */
+}
+
+.mobile-menu-btn {
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    transition: all 0.3s ease;
+    margin-right: 1rem;
+}
+
+.mobile-menu-btn:hover {
+    background-color: var(--primary-color);
+    color: var(--bg-color);
+    transform: scale(1.05);
+}
+
+.mobile-menu-btn.active {
+    background-color: var(--accent-color);
+    color: var(--bg-color);
+    box-shadow: 0 0 10px var(--shadow-color);
+}
+
+.mobile-dropdown {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px var(--shadow-color);
+    min-width: 280px;
+    max-width: 320px;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.mobile-dropdown.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.mobile-dropdown-section {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.mobile-dropdown-section:last-child {
+    border-bottom: none;
+}
+
+.mobile-dropdown-section h4 {
+    color: var(--accent-color);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 0.75rem 0;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.mobile-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.75rem;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    font-size: 0.95rem;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.2s ease;
+    margin-bottom: 0.25rem;
+    text-align: left;
+}
+
+.mobile-dropdown-item:hover {
+    background-color: var(--primary-color);
+    color: var(--bg-color);
+    transform: translateX(4px);
+}
+
+.mobile-dropdown-item:last-child {
+    margin-bottom: 0;
+}
+
+.mobile-dropdown-item i {
+    width: 16px;
+    text-align: center;
+    opacity: 0.8;
+}
+
+.mobile-dropdown-select {
+    width: 100%;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 0.75rem;
+    border-radius: 5px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mobile-dropdown-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--primary-color), 0.2);
+}
+
+.mobile-dropdown-select:hover {
+    border-color: var(--accent-color);
+}
+
+/* Show mobile dropdown container only in mobile mode */
+.app-container.mobile-mode .mobile-dropdown-container {
+    display: block;
+}
+
+/* Hide regular theme and template selectors in mobile mode */
+.app-container.mobile-mode .theme-switcher,
+.app-container.mobile-mode .template-selector {
+    display: none;
+}
+
+/* Mobile dropdown scrollbar styling */
+.mobile-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.mobile-dropdown::-webkit-scrollbar-track {
+    background: var(--surface-color);
+    border-radius: 3px;
+}
+
+.mobile-dropdown::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.mobile-dropdown::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}
+
+/* Mobile layout styles */
+.app-container.mobile-mode {
+    --mobile-header-height: 60px;
+}
+
+.app-container.mobile-mode .main-content {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    gap: 0;
+    padding: 0;
+    height: calc(100vh - var(--mobile-header-height));
+}
+
+.app-container.mobile-mode .app-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    height: var(--mobile-header-height);
+    padding: 0.5rem 1rem;
+}
+
+.app-container.mobile-mode .app-header h1 {
+    font-size: 1.2rem;
+}
+
+.app-container.mobile-mode .header-controls {
+    gap: 0.5rem;
+}
+
+.app-container.mobile-mode .toolbar {
+    display: none;
+}
+
+/* Mobile panel styles */
+.mobile-panel {
+    position: fixed;
+    top: var(--mobile-header-height);
+    width: 280px;
+    height: calc(100vh - var(--mobile-header-height));
+    background-color: var(--surface-color);
+    border-radius: 0;
+    box-shadow: 2px 0 10px var(--shadow-color);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 90;
+    overflow-y: auto;
+}
+
+.mobile-panel.open {
+    transform: translateX(0);
+}
+
+.mobile-panel.right {
+    right: 0;
+    left: auto;
+    transform: translateX(100%);
+    box-shadow: -2px 0 10px var(--shadow-color);
+}
+
+.mobile-panel.right.open {
+    transform: translateX(0);
+}
+
+/* Mobile workspace */
+.app-container.mobile-mode #workspace {
+    margin: 0;
+    border-radius: 0;
+    height: 100%;
+    overflow-y: auto;
+}
+
+/* Mobile panel toggle buttons */
+.mobile-panel-toggle {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: var(--primary-color);
+    color: var(--bg-color);
+    border: none;
+    padding: 1rem 0.5rem;
+    border-radius: 0 8px 8px 0;
+    cursor: pointer;
+    font-size: 1.2rem;
+    z-index: 95;
+    transition: all 0.3s ease;
+    box-shadow: 2px 0 10px var(--shadow-color);
+}
+
+.mobile-panel-toggle:hover {
+    background-color: var(--accent-color);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.mobile-panel-toggle.right {
+    right: 0;
+    border-radius: 8px 0 0 8px;
+    box-shadow: -2px 0 10px var(--shadow-color);
+}
+
+.mobile-panel-toggle.left {
+    left: 0;
+}
+
+/* Hide panel toggles in desktop mode */
+.app-container:not(.mobile-mode) .mobile-panel-toggle {
+    display: none;
+}
+
+/* Mobile overlay */
+.mobile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 85;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.mobile-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Auto-detect mobile styles */
+@media (max-width: 768px) {
+    .main-content {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+        gap: 0;
+        padding: 0;
+    }
+    
+    #toolbox,
+    #output-panel {
+        display: none;
+    }
+    
+    #workspace {
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .app-header {
+        padding: 0.5rem 1rem;
+    }
+    
+    .app-header h1 {
+        font-size: 1.2rem;
+    }
+    
+    .toolbar {
+        display: none;
+    }
+    
+    .header-controls {
+        gap: 0.5rem;
+    }
+    
+    .theme-switcher label,
+    .template-selector label {
+        display: none;
+    }
+    
+    .theme-switcher select,
+    .template-selector select {
+        min-width: 80px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+    .tool-item {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .script-block {
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .delete-block-btn {
+        padding: 0.5rem;
+        font-size: 1.1rem;
+    }
+    
+    .toolbar-button {
+        padding: 0.75rem 1.25rem;
+        font-size: 1rem;
+    }
+    
+    input[type="text"],
+    textarea,
+    select {
+        padding: 0.75rem;
+        font-size: 1rem;
+    }
+}

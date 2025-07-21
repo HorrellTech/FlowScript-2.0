@@ -7,6 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // CodeMirror instances tracking
     const codeMirrorInstances = new Map();
 
+    // Mobile functionality state
+    let isMobileMode = false;
+    let isAutoMobile = false;
+
 
     // =========================================================================
     // == BLOCK DEFINITIONS: The heart of the modular system. ==
@@ -784,6 +788,238 @@ ${i}</body>
     fileInput.style.display = 'none';
     document.body.appendChild(fileInput);
 
+    // Mobile functionality references
+    const mobileToggleBtn = document.getElementById('mobile-toggle');
+    const appContainer = document.querySelector('.app-container');
+    const toolbox = document.getElementById('toolbox');
+    const outputPanel = document.getElementById('output-panel');
+    
+    // Mobile dropdown references
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileDropdown = document.getElementById('mobile-dropdown');
+    const mobileDropdownContainer = document.querySelector('.mobile-dropdown-container');
+    
+    // Mobile dropdown item references
+    const mobileNewBtn = document.getElementById('mobile-new-btn');
+    const mobileOpenBtn = document.getElementById('mobile-open-btn');
+    const mobileSaveBtn = document.getElementById('mobile-save-btn');
+    const mobileExportBtn = document.getElementById('mobile-export-btn');
+    const mobileThemeSelect = document.getElementById('mobile-theme-select');
+    const mobileTemplateSelect = document.getElementById('mobile-template-select');
+
+    // =========================================================================
+    // == MOBILE FUNCTIONALITY ==
+    // =========================================================================
+
+    /**
+     * Detect if device is mobile based on screen size and user agent
+     */
+    const detectMobile = () => {
+        const isMobileScreen = window.innerWidth <= 768;
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const isMobileUserAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        return isMobileScreen || (isTouchDevice && isMobileUserAgent);
+    };
+
+    /**
+     * Create mobile panel toggle buttons
+     */
+    const createMobilePanelToggles = () => {
+        // Remove existing toggles
+        document.querySelectorAll('.mobile-panel-toggle').forEach(toggle => toggle.remove());
+        
+        // Create left toggle for toolbox
+        const leftToggle = document.createElement('button');
+        leftToggle.className = 'mobile-panel-toggle left';
+        leftToggle.innerHTML = '<i class="fa-solid fa-toolbox"></i>';
+        leftToggle.title = 'Toggle Toolbox';
+        leftToggle.addEventListener('click', () => toggleMobilePanel('left'));
+        
+        // Create right toggle for output panel
+        const rightToggle = document.createElement('button');
+        rightToggle.className = 'mobile-panel-toggle right';
+        rightToggle.innerHTML = '<i class="fa-solid fa-code"></i>';
+        rightToggle.title = 'Toggle Code Output';
+        rightToggle.addEventListener('click', () => toggleMobilePanel('right'));
+        
+        document.body.appendChild(leftToggle);
+        document.body.appendChild(rightToggle);
+    };
+
+    /**
+     * Create mobile overlay
+     */
+    const createMobileOverlay = () => {
+        let overlay = document.querySelector('.mobile-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.className = 'mobile-overlay';
+            overlay.addEventListener('click', closeMobilePanels);
+            document.body.appendChild(overlay);
+        }
+        return overlay;
+    };
+
+    /**
+     * Toggle mobile panel
+     */
+    const toggleMobilePanel = (side) => {
+        const panel = side === 'left' ? toolbox : outputPanel;
+        const overlay = createMobileOverlay();
+        
+        // Close other panel first
+        const otherPanel = side === 'left' ? outputPanel : toolbox;
+        otherPanel.classList.remove('open');
+        
+        // Toggle current panel
+        const isOpen = panel.classList.contains('open');
+        
+        if (isOpen) {
+            panel.classList.remove('open');
+            overlay.classList.remove('active');
+        } else {
+            panel.classList.add('open');
+            overlay.classList.add('active');
+        }
+    };
+
+    /**
+     * Close all mobile panels
+     */
+    const closeMobilePanels = () => {
+        toolbox.classList.remove('open');
+        outputPanel.classList.remove('open');
+        const overlay = document.querySelector('.mobile-overlay');
+        if (overlay) {
+            overlay.classList.remove('active');
+        }
+    };
+
+    /**
+     * Toggle mobile dropdown menu
+     */
+    const toggleMobileDropdown = () => {
+        const isOpen = mobileDropdown.classList.contains('open');
+        
+        if (isOpen) {
+            closeMobileDropdown();
+        } else {
+            openMobileDropdown();
+        }
+    };
+
+    /**
+     * Open mobile dropdown menu
+     */
+    const openMobileDropdown = () => {
+        // Close mobile panels first
+        closeMobilePanels();
+        
+        // Open dropdown
+        mobileDropdown.classList.add('open');
+        mobileMenuBtn.classList.add('active');
+        
+        // Sync theme and template selectors with main ones
+        syncMobileSelectors();
+    };
+
+    /**
+     * Close mobile dropdown menu
+     */
+    const closeMobileDropdown = () => {
+        mobileDropdown.classList.remove('open');
+        mobileMenuBtn.classList.remove('active');
+    };
+
+    /**
+     * Sync mobile selectors with main selectors
+     */
+    const syncMobileSelectors = () => {
+        if (mobileThemeSelect && themeSelect) {
+            mobileThemeSelect.value = themeSelect.value;
+        }
+        if (mobileTemplateSelect && templateSelect) {
+            mobileTemplateSelect.value = templateSelect.value;
+        }
+    };
+
+    /**
+     * Handle clicks outside mobile dropdown to close it
+     */
+    const handleMobileDropdownOutsideClick = (event) => {
+        if (!mobileDropdownContainer.contains(event.target)) {
+            closeMobileDropdown();
+        }
+    };
+
+    /**
+     * Enable mobile mode
+     */
+    const enableMobileMode = () => {
+        isMobileMode = true;
+        appContainer.classList.add('mobile-mode');
+        mobileToggleBtn.classList.add('active');
+        
+        // Convert panels to mobile panels
+        toolbox.classList.add('mobile-panel');
+        outputPanel.classList.add('mobile-panel', 'right');
+        
+        // Create toggle buttons
+        createMobilePanelToggles();
+        
+        // Create overlay
+        createMobileOverlay();
+        
+        // Close panels initially
+        closeMobilePanels();
+        
+        // Sync mobile dropdown selectors
+        syncMobileSelectors();
+    };
+
+    /**
+     * Disable mobile mode
+     */
+    const disableMobileMode = () => {
+        isMobileMode = false;
+        appContainer.classList.remove('mobile-mode');
+        mobileToggleBtn.classList.remove('active');
+        
+        // Close mobile dropdown
+        closeMobileDropdown();
+        
+        // Remove mobile panel classes
+        toolbox.classList.remove('mobile-panel', 'open');
+        outputPanel.classList.remove('mobile-panel', 'right', 'open');
+        
+        // Remove toggle buttons
+        document.querySelectorAll('.mobile-panel-toggle').forEach(toggle => toggle.remove());
+        
+        // Remove overlay
+        const overlay = document.querySelector('.mobile-overlay');
+        if (overlay) {
+            overlay.remove();
+        }
+    };
+
+    /**
+     * Check and update mobile mode based on screen size
+     */
+    const checkMobileMode = () => {
+        const shouldBeAutoMobile = detectMobile();
+        
+        if (shouldBeAutoMobile && !isAutoMobile && !isMobileMode) {
+            // Auto-enable mobile mode
+            isAutoMobile = true;
+            enableMobileMode();
+        } else if (!shouldBeAutoMobile && isAutoMobile && isMobileMode) {
+            // Auto-disable mobile mode
+            isAutoMobile = false;
+            disableMobileMode();
+        }
+    };
+
     // =========================================================================
     // == CODEMIRROR HELPER FUNCTIONS ==
     // =========================================================================
@@ -1108,7 +1344,31 @@ ${i}</body>
             });
         }, 100);
         
+        // Prevent dragging when interacting with text input elements
+        block.addEventListener('mousedown', e => {
+            const target = e.target;
+            if (target.matches('input[type="text"], textarea, select') ||
+                target.closest('input[type="text"], textarea, select') ||
+                target.closest('.CodeMirror')) {
+                // Temporarily disable dragging for this block
+                block.draggable = false;
+                // Re-enable dragging after a short delay to allow text selection
+                setTimeout(() => {
+                    block.draggable = true;
+                }, 100);
+            }
+        });
+        
         block.addEventListener('dragstart', e => {
+            // Prevent dragging if the user is interacting with text input elements
+            const target = e.target;
+            if (target.matches('input[type="text"], textarea, select') ||
+                target.closest('input[type="text"], textarea, select') ||
+                target.closest('.CodeMirror')) {
+                e.preventDefault();
+                return false;
+            }
+            
             e.stopPropagation();
             draggedElement = block;
             e.dataTransfer.setData('application/x-script-block', type);
@@ -1785,4 +2045,154 @@ ${i}</body>
 
     // NEW: Initialize with the default workspace on page load
     createDefaultWorkspace();
+
+    // =========================================================================
+    // == MOBILE FUNCTIONALITY EVENT LISTENERS ==
+    // =========================================================================
+
+    // Mobile toggle button event listener
+    mobileToggleBtn.addEventListener('click', () => {
+        if (isMobileMode) {
+            disableMobileMode();
+            isAutoMobile = false; // Prevent auto-enable until manual toggle again
+        } else {
+            enableMobileMode();
+            isAutoMobile = false; // This is now a manual toggle
+        }
+    });
+
+    // Mobile dropdown menu event listeners
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleMobileDropdown();
+        });
+    }
+
+    // Mobile dropdown file management buttons
+    if (mobileNewBtn) {
+        mobileNewBtn.addEventListener('click', () => {
+            closeMobileDropdown();
+            newButton.click(); // Trigger the main new button functionality
+        });
+    }
+
+    if (mobileOpenBtn) {
+        mobileOpenBtn.addEventListener('click', () => {
+            closeMobileDropdown();
+            openButton.click(); // Trigger the main open button functionality
+        });
+    }
+
+    if (mobileSaveBtn) {
+        mobileSaveBtn.addEventListener('click', () => {
+            closeMobileDropdown();
+            saveButton.click(); // Trigger the main save button functionality
+        });
+    }
+
+    if (mobileExportBtn) {
+        mobileExportBtn.addEventListener('click', () => {
+            closeMobileDropdown();
+            exportButton.click(); // Trigger the main export button functionality
+        });
+    }
+
+    // Mobile theme selector
+    if (mobileThemeSelect) {
+        mobileThemeSelect.addEventListener('change', (e) => {
+            themeSelect.value = e.target.value;
+            themeSelect.dispatchEvent(new Event('change'));
+            closeMobileDropdown();
+        });
+    }
+
+    // Mobile template selector
+    if (mobileTemplateSelect) {
+        mobileTemplateSelect.addEventListener('change', (e) => {
+            templateSelect.value = e.target.value;
+            templateSelect.dispatchEvent(new Event('change'));
+            // Don't close dropdown immediately for template selection
+            // as the user might want to see the confirmation dialog
+        });
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (isMobileMode && mobileDropdown && mobileDropdown.classList.contains('open')) {
+            handleMobileDropdownOutsideClick(e);
+        }
+    });
+
+    // Prevent dropdown from closing when clicking inside it
+    if (mobileDropdown) {
+        mobileDropdown.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    }
+
+    // Window resize listener for auto mobile detection
+    window.addEventListener('resize', () => {
+        // Debounce resize events
+        clearTimeout(window.resizeTimeout);
+        window.resizeTimeout = setTimeout(() => {
+            checkMobileMode();
+        }, 250);
+    });
+
+    // Touch event improvements for mobile
+    if ('ontouchstart' in window) {
+        // Add touch-friendly drag and drop for mobile devices
+        document.addEventListener('touchstart', (e) => {
+            // Prevent default touch behavior on draggable elements
+            if (e.target.closest('.tool-item, .script-block')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // Improve touch scrolling in mobile panels
+        document.addEventListener('touchmove', (e) => {
+            const panel = e.target.closest('.mobile-panel');
+            if (panel && panel.classList.contains('open')) {
+                e.stopPropagation();
+            }
+        }, { passive: true });
+    }
+
+    // Keyboard shortcuts for mobile panels and dropdown
+    document.addEventListener('keydown', (e) => {
+        if (isMobileMode) {
+            // ESC to close panels and dropdown
+            if (e.key === 'Escape') {
+                closeMobilePanels();
+                closeMobileDropdown();
+            }
+            // M for mobile menu dropdown
+            if (e.key === 'm' || e.key === 'M') {
+                if (e.ctrlKey || e.metaKey) {
+                    e.preventDefault();
+                    toggleMobileDropdown();
+                }
+            }
+            // T for toolbox
+            if (e.key === 't' || e.key === 'T') {
+                if (e.ctrlKey || e.metaKey) {
+                    e.preventDefault();
+                    toggleMobilePanel('left');
+                }
+            }
+            // O for output
+            if (e.key === 'o' || e.key === 'O') {
+                if (e.ctrlKey || e.metaKey) {
+                    e.preventDefault();
+                    toggleMobilePanel('right');
+                }
+            }
+        }
+    });
+
+    // Initial mobile check
+    setTimeout(() => {
+        checkMobileMode();
+    }, 100);
 });
