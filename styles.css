@@ -240,6 +240,7 @@ h2 {
     transition: transform 0.2s, box-shadow 0.2s;
     user-select: none;
     /* Prevent text selection from interfering with drag */
+    position: relative;
 }
 
 .tool-item i {
@@ -277,6 +278,54 @@ h2 {
     /* Allow content to take up remaining space */
     padding-right: 0.75rem;
     /* Add padding to the right */
+}
+
+/* Plus button for adding blocks */
+.tool-item-add-btn {
+    position: absolute;
+    top: 50%;
+    right: 0.5rem;
+    transform: translateY(-50%);
+    background-color: var(--primary-color);
+    color: var(--bg-color);
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+    opacity: 0.8;
+    z-index: 2;
+}
+
+.tool-item-add-btn:hover {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
+    background-color: var(--accent-color);
+    box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.tool-item-add-btn:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+/* Show plus button more prominently on mobile/touch devices */
+@media (hover: none) and (pointer: coarse) {
+    .tool-item-add-btn {
+        opacity: 1;
+        width: 28px;
+        height: 28px;
+        font-size: 0.9rem;
+        right: 0.75rem;
+    }
+    
+    .tool-item-content {
+        padding-right: 3rem; /* More space for the button on mobile */
+    }
 }
 
 /* --- WORKSPACE & SCRIPT BLOCKS --- */
@@ -1000,8 +1049,9 @@ body.no-select {
         padding: 0;
     }
     
-    #toolbox,
-    #output-panel {
+    /* Don't completely hide panels - let mobile mode handle them */
+    .app-container:not(.mobile-mode) #toolbox,
+    .app-container:not(.mobile-mode) #output-panel {
         display: none;
     }
     
@@ -1035,6 +1085,11 @@ body.no-select {
     .template-selector select {
         min-width: 80px;
         font-size: 0.9rem;
+    }
+    
+    /* Show mobile dropdown container on small screens */
+    .mobile-dropdown-container {
+        display: block !important;
     }
 }
 

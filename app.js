@@ -965,6 +965,10 @@ ${i}</body>
         toolbox.classList.add('mobile-panel');
         outputPanel.classList.add('mobile-panel', 'right');
         
+        // Ensure panels are visible (remove any display: none)
+        toolbox.style.display = '';
+        outputPanel.style.display = '';
+        
         // Create toggle buttons
         createMobilePanelToggles();
         
@@ -976,6 +980,11 @@ ${i}</body>
         
         // Sync mobile dropdown selectors
         syncMobileSelectors();
+        
+        // Show mobile dropdown container
+        if (mobileDropdownContainer) {
+            mobileDropdownContainer.style.display = 'block';
+        }
     };
 
     /**
@@ -993,6 +1002,10 @@ ${i}</body>
         toolbox.classList.remove('mobile-panel', 'open');
         outputPanel.classList.remove('mobile-panel', 'right', 'open');
         
+        // Reset panel styles for desktop mode
+        toolbox.style.display = '';
+        outputPanel.style.display = '';
+        
         // Remove toggle buttons
         document.querySelectorAll('.mobile-panel-toggle').forEach(toggle => toggle.remove());
         
@@ -1000,6 +1013,11 @@ ${i}</body>
         const overlay = document.querySelector('.mobile-overlay');
         if (overlay) {
             overlay.remove();
+        }
+        
+        // Hide mobile dropdown container in desktop mode
+        if (mobileDropdownContainer) {
+            mobileDropdownContainer.style.display = 'none';
         }
     };
 
@@ -1017,6 +1035,13 @@ ${i}</body>
             // Auto-disable mobile mode
             isAutoMobile = false;
             disableMobileMode();
+        }
+        
+        // Ensure mobile dropdown is visible on small screens
+        if (shouldBeAutoMobile) {
+            mobileDropdownContainer.style.display = 'block';
+        } else if (!isMobileMode) {
+            mobileDropdownContainer.style.display = 'none';
         }
     };
 
@@ -1242,7 +1267,10 @@ ${i}</body>
                 <div class="drag-grip"><i class="fa-solid fa-grip-vertical"></i></div>
                 <div class="tool-item-content">
                     <i class="${def.icon}" style="color: ${def.color};"></i> ${def.label}
-                </div>`;
+                </div>
+                <button class="tool-item-add-btn" title="Add ${def.label} to workspace" data-type="${def.type}">
+                    <i class="fa-solid fa-plus"></i>
+                </button>`;
                 item.addEventListener('dragstart', e => {
                     e.dataTransfer.setData('application/x-script-block', def.type);
                     item.classList.add('dragging');
@@ -1252,6 +1280,38 @@ ${i}</body>
                     item.classList.remove('dragging');
                     document.body.classList.remove('no-select');
                 });
+                
+                // Add click handler for the plus button
+                const addBtn = item.querySelector('.tool-item-add-btn');
+                addBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    
+                    // Create and add the block to the main workspace
+                    const newBlock = createBlock(def.type);
+                    if (newBlock) {
+                        mainDropZone.appendChild(newBlock);
+                        updatePlaceholderVisibility(mainDropZone);
+                        generateCode();
+                        
+                        // Show success feedback
+                        const originalIcon = addBtn.innerHTML;
+                        addBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
+                        addBtn.style.backgroundColor = 'var(--accent-color)';
+                        setTimeout(() => {
+                            addBtn.innerHTML = originalIcon;
+                            addBtn.style.backgroundColor = '';
+                        }, 1000);
+                        
+                        // If in mobile mode, close the toolbox panel after adding
+                        if (isMobileMode && toolbox.classList.contains('open')) {
+                            setTimeout(() => {
+                                closeMobilePanels();
+                            }, 500);
+                        }
+                    }
+                });
+                
                 blocksContainer.appendChild(item);
             });
 
