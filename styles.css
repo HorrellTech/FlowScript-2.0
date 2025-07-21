@@ -351,7 +351,7 @@ h2 {
 
 .script-block textarea {
     min-height: 80px;
-    min-width: 200px;
+    width: 100%;
     resize: vertical;
     font-family: var(--font-code);
 }
@@ -364,8 +364,136 @@ h2 {
     border-radius: 4px;
     font-family: var(--font-code);
     min-height: 80px;
-    min-width: 200px;
+    width: 100%;
     resize: vertical;
+}
+
+/* Themed resize grip */
+.script-block textarea::-webkit-resizer,
+.themed-textarea::-webkit-resizer {
+    background-color: var(--primary-color);
+    border-radius: 2px;
+}
+
+/* CodeMirror styling to match theme */
+.CodeMirror {
+    background-color: var(--bg-color) !important;
+    color: var(--text-color) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 4px;
+    font-family: var(--font-code) !important;
+    min-height: 80px;
+    width: 100%;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.CodeMirror-focused {
+    border-color: var(--primary-color) !important;
+    outline: 1px solid var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--primary-color), 0.1);
+}
+
+.CodeMirror-gutters {
+    background-color: var(--surface-color) !important;
+    border-right: 1px solid var(--border-color) !important;
+}
+
+.CodeMirror-linenumber {
+    color: var(--text-muted-color) !important;
+    padding: 0 8px 0 0;
+}
+
+.CodeMirror-cursor {
+    border-left: 2px solid var(--accent-color) !important;
+}
+
+.CodeMirror-selected {
+    background-color: var(--primary-color) !important;
+    opacity: 0.2;
+}
+
+.CodeMirror-line::selection,
+.CodeMirror-line > span::selection,
+.CodeMirror-line > span > span::selection {
+    background-color: var(--primary-color) !important;
+    opacity: 0.2;
+}
+
+.CodeMirror-activeline-background {
+    background-color: var(--drop-zone-bg) !important;
+}
+
+.CodeMirror-matchingbracket {
+    background-color: var(--accent-color) !important;
+    color: var(--bg-color) !important;
+    border-radius: 2px;
+}
+
+.CodeMirror-nonmatchingbracket {
+    background-color: #f7768e !important;
+    color: var(--bg-color) !important;
+    border-radius: 2px;
+}
+
+/* CodeMirror scrollbars */
+.CodeMirror-scrollbar-filler,
+.CodeMirror-gutter-filler {
+    background-color: var(--surface-color) !important;
+}
+
+.CodeMirror-vscrollbar,
+.CodeMirror-hscrollbar {
+    background-color: var(--surface-color) !important;
+}
+
+.CodeMirror-vscrollbar::-webkit-scrollbar,
+.CodeMirror-hscrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.CodeMirror-vscrollbar::-webkit-scrollbar-track,
+.CodeMirror-hscrollbar::-webkit-scrollbar-track {
+    background: var(--surface-color);
+}
+
+.CodeMirror-vscrollbar::-webkit-scrollbar-thumb,
+.CodeMirror-hscrollbar::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+.CodeMirror-vscrollbar::-webkit-scrollbar-thumb:hover,
+.CodeMirror-hscrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}
+
+/* CodeMirror fold gutter */
+.CodeMirror-foldgutter {
+    width: 16px;
+}
+
+.CodeMirror-foldgutter-open,
+.CodeMirror-foldgutter-folded {
+    cursor: pointer;
+    color: var(--text-muted-color) !important;
+}
+
+.CodeMirror-foldgutter-open:hover,
+.CodeMirror-foldgutter-folded:hover {
+    color: var(--accent-color) !important;
+}
+
+/* Search highlighting */
+.CodeMirror-searching {
+    background-color: var(--accent-color) !important;
+    color: var(--bg-color) !important;
+}
+
+.cm-searching {
+    background-color: var(--accent-color) !important;
+    color: var(--bg-color) !important;
 }
 
 .themed-textarea:focus {

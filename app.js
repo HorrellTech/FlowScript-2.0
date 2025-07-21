@@ -4,6 +4,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const dropIndicator = document.createElement('div');
     dropIndicator.className = 'drop-indicator';
 
+    // CodeMirror instances tracking
+    const codeMirrorInstances = new Map();
+
 
     // =========================================================================
     // == BLOCK DEFINITIONS: The heart of the modular system. ==
@@ -308,7 +311,7 @@ ${i}</body>
             {
                 type: 'css_raw', label: 'Raw CSS', icon: 'fa-solid fa-file-code', color: '#7aa2f7',
                 html: () => `<div class="block-content"><label>CSS Code:</label><br><textarea placeholder="Enter your raw CSS here..." data-token="code" class="themed-textarea" title="For any custom CSS not covered by other blocks."></textarea></div>`,
-                parser: b => b.querySelector('[data-token="code"]').value || '',
+                parser: b => getTextareaValue(b.querySelector('[data-token="code"]')) || '',
                 importer: (node) => {
                     if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() && node.parentNode.nodeName.toLowerCase() === 'style') {
                         return {
@@ -325,7 +328,7 @@ ${i}</body>
             {
                 type: 'javascript', label: 'Raw Code', icon: 'fa-solid fa-file-code', color: '#bb9af7',
                 html: () => `<div class="block-content"><label>JavaScript Code:</label><br><textarea placeholder="Enter your code here..." data-token="code" class="themed-textarea" title="For any custom code not covered by other blocks."></textarea></div>`,
-                parser: b => b.querySelector('[data-token="code"]').value || '',
+                parser: b => getTextareaValue(b.querySelector('[data-token="code"]')) || '',
                 // ADDED: Importer to handle raw text content inside a <script> tag.
                 importer: (node) => {
                     if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() && node.parentNode.nodeName.toLowerCase() === 'script' && !node.parentNode.hasAttribute('src')) {
@@ -471,7 +474,7 @@ ${i}</body>
                         <textarea placeholder="Enter your custom CSS here..." data-token="css" class="themed-textarea" title="Any CSS code that doesn't have a specific block." style="width: 100%; min-height: 100px;"></textarea>
                     </div>
                 `,
-                parser: b => b.querySelector('[data-token="css"]').value || '',
+                parser: b => getTextareaValue(b.querySelector('[data-token="css"]')) || '',
                 importer: (node) => {
                     // Handle unrecognized CSS content
                     if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() &&
@@ -497,7 +500,7 @@ ${i}</body>
                         <textarea placeholder="Enter your custom JavaScript here..." data-token="js" class="themed-textarea" title="Any JavaScript code that doesn't have a specific block." style="width: 100%; min-height: 100px;"></textarea>
                     </div>
                 `,
-                parser: b => b.querySelector('[data-token="js"]').value || '',
+                parser: b => getTextareaValue(b.querySelector('[data-token="js"]')) || '',
                 importer: (node) => {
                     // Handle unrecognized JavaScript content
                     if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() &&
@@ -524,7 +527,7 @@ ${i}</body>
                         <textarea placeholder="Enter raw text content..." data-token="text" class="themed-textarea" title="Plain text content." style="width: 100%; min-height: 60px;"></textarea>
                     </div>
                 `,
-                parser: b => b.querySelector('[data-token="text"]').value || '',
+                parser: b => getTextareaValue(b.querySelector('[data-token="text"]')) || '',
                 importer: (node) => {
                     // Handle text nodes that aren't empty
                     if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
@@ -782,6 +785,197 @@ ${i}</body>
     document.body.appendChild(fileInput);
 
     // =========================================================================
+    // == CODEMIRROR HELPER FUNCTIONS ==
+    // =========================================================================
+
+    /**
+     * Initialize CodeMirror for a textarea based on the block type
+     */
+    const initializeCodeMirror = (textarea, blockType) => {
+        if (!window.CodeMirror) {
+            console.warn('CodeMirror not loaded, falling back to regular textarea');
+            return null;
+        }
+
+        // Check if CodeMirror is already initialized for this textarea
+        const blockElement = textarea.closest('.script-block');
+        if (blockElement) {
+            const blockId = blockElement.dataset.blockId;
+            if (blockId && codeMirrorInstances.has(blockId)) {
+                // CodeMirror already exists for this block, return existing instance
+                return codeMirrorInstances.get(blockId);
+            }
+        }
+
+        let mode = 'text/plain';
+        let theme = getCodeMirrorTheme();
+
+        // Determine mode based on block type - Fixed mode detection
+        switch (blockType) {
+            case 'javascript':
+            case 'custom_javascript':
+                mode = 'javascript';
+                break;
+            case 'css_raw':
+            case 'custom_css':
+                mode = 'css';
+                break;
+            case 'custom_html':
+                mode = 'htmlmixed';
+                break;
+            case 'raw_text':
+                // Keep as regular textarea for raw text
+                return null;
+            default:
+                // For other block types, check if they should have syntax highlighting
+                if (textarea.classList.contains('themed-textarea')) {
+                    // Try to detect from content or context
+                    const content = textarea.value.toLowerCase();
+                    if (content.includes('function') || content.includes('const') || content.includes('let')) {
+                        mode = 'javascript';
+                    } else if (content.includes('{') && (content.includes(':') || content.includes('color'))) {
+                        mode = 'css';
+                    } else if (content.includes('<') && content.includes('>')) {
+                        mode = 'htmlmixed';
+                    }
+                } else {
+                    return null;
+                }
+        }
+
+        const editor = CodeMirror.fromTextArea(textarea, {
+            mode: mode,
+            theme: theme,
+            lineNumbers: true,
+            lineWrapping: true,
+            indentUnit: 2,
+            tabSize: 2,
+            indentWithTabs: false,
+            matchBrackets: true,
+            autoCloseBrackets: true,
+            styleActiveLine: true,
+            viewportMargin: Infinity,
+            foldGutter: true,
+            gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+            highlightSelectionMatches: {showToken: /\w/, annotateScrollbar: true},
+            extraKeys: {
+                "Ctrl-Space": "autocomplete",
+                "F11": function(cm) {
+                    cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+                },
+                "Esc": function(cm) {
+                    if (cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
+                }
+            }
+        });
+
+        // Store reference for cleanup
+        if (blockElement) {
+            const blockId = blockElement.dataset.blockId || Date.now().toString();
+            blockElement.dataset.blockId = blockId;
+            codeMirrorInstances.set(blockId, editor);
+        }
+
+        // Update theme when it changes
+        editor.on('change', () => {
+            // Trigger code generation when content changes
+            generateCode();
+        });
+
+        // Force refresh to ensure syntax highlighting is applied
+        setTimeout(() => {
+            editor.refresh();
+        }, 100);
+
+        return editor;
+    };
+
+    /**
+     * Get appropriate CodeMirror theme based on current app theme
+     */
+    const getCodeMirrorTheme = () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        
+        // Map app themes to appropriate CodeMirror themes
+        switch (currentTheme) {
+            case 'light':
+                return 'eclipse';
+            case 'arctic':
+                return 'base16-light';
+            case 'dark':
+                return 'monokai';
+            case 'cyber':
+                return 'material';
+            case 'neon':
+                return 'dracula';
+            case 'retro':
+                return 'base16-dark';
+            case 'forest':
+                return 'base16-dark';
+            case 'ocean':
+                return 'oceanic-next';
+            case 'sunset':
+                return 'night';
+            default:
+                return 'monokai';
+        }
+    };
+
+    /**
+     * Update all CodeMirror instances when theme changes
+     */
+    const updateCodeMirrorThemes = () => {
+        const newTheme = getCodeMirrorTheme();
+        codeMirrorInstances.forEach(editor => {
+            editor.setOption('theme', newTheme);
+            // Force refresh to apply theme changes
+            setTimeout(() => {
+                editor.refresh();
+            }, 50);
+        });
+    };
+
+    /**
+     * Clean up CodeMirror instance when block is deleted
+     */
+    const cleanupCodeMirror = (blockElement) => {
+        const blockId = blockElement.dataset.blockId;
+        if (blockId && codeMirrorInstances.has(blockId)) {
+            const editor = codeMirrorInstances.get(blockId);
+            editor.toTextArea();
+            codeMirrorInstances.delete(blockId);
+        }
+    };
+
+    /**
+     * Get value from textarea or CodeMirror editor
+     */
+    const getTextareaValue = (textarea) => {
+        const blockElement = textarea.closest('.script-block');
+        const blockId = blockElement?.dataset.blockId;
+        
+        if (blockId && codeMirrorInstances.has(blockId)) {
+            return codeMirrorInstances.get(blockId).getValue();
+        }
+        
+        return textarea.value;
+    };
+
+    /**
+     * Set value to textarea or CodeMirror editor
+     */
+    const setTextareaValue = (textarea, value) => {
+        const blockElement = textarea.closest('.script-block');
+        const blockId = blockElement?.dataset.blockId;
+        
+        if (blockId && codeMirrorInstances.has(blockId)) {
+            codeMirrorInstances.get(blockId).setValue(value);
+        } else {
+            textarea.value = value;
+        }
+    };
+
+    // =========================================================================
     // == CORE LOGIC ==
     // =========================================================================
 
@@ -902,6 +1096,18 @@ ${i}</body>
         block.style.borderLeft = `4px solid ${definition.color}`;
         block.innerHTML = `<div class="block-header"><i class="${definition.icon}"></i><span>${definition.label}</span></div>${definition.html()}<button class="delete-block-btn" title="Delete Block"><i class="fa-solid fa-xmark"></i></button>`;
         block.querySelectorAll('.nested-drop-zone').forEach(addDragAndDropListeners);
+        
+        // Initialize CodeMirror for appropriate textareas - Fixed timing
+        setTimeout(() => {
+            const textareas = block.querySelectorAll('textarea[data-token]');
+            textareas.forEach(textarea => {
+                // Only initialize if textarea is visible and has the themed-textarea class
+                if (textarea.classList.contains('themed-textarea') && textarea.offsetParent !== null) {
+                    initializeCodeMirror(textarea, type);
+                }
+            });
+        }, 100);
+        
         block.addEventListener('dragstart', e => {
             e.stopPropagation();
             draggedElement = block;
@@ -1003,13 +1209,27 @@ ${i}</body>
                     Object.entries(importResult.tokens).forEach(([tokenName, value]) => {
                         const input = newBlockElement.querySelector(`[data-token="${tokenName}"]`);
                         if (input) {
-                            input.value = value || '';
+                            if (input.tagName.toLowerCase() === 'textarea') {
+                                setTextareaValue(input, value || '');
+                            } else {
+                                input.value = value || '';
+                            }
                         }
                     });
                 }
 
                 targetDropZone.appendChild(newBlockElement);
                 updatePlaceholderVisibility(targetDropZone);
+
+                // Initialize CodeMirror for imported blocks with textareas
+                setTimeout(() => {
+                    const textareas = newBlockElement.querySelectorAll('textarea[data-token].themed-textarea');
+                    textareas.forEach(textarea => {
+                        if (textarea.offsetParent !== null) {
+                            initializeCodeMirror(textarea, importResult.type);
+                        }
+                    });
+                }, 150);
 
                 // If the imported block is a container, recursively build its children
                 if (importResult.branches) {
@@ -1051,7 +1271,11 @@ ${i}</body>
                             Object.entries(customBlock.tokens).forEach(([tokenName, value]) => {
                                 const input = newBlockElement.querySelector(`[data-token="${tokenName}"]`);
                                 if (input) {
-                                    input.value = value || '';
+                                    if (input.tagName.toLowerCase() === 'textarea') {
+                                        setTextareaValue(input, value || '');
+                                    } else {
+                                        input.value = value || '';
+                                    }
                                     // Update closing tag name for custom HTML blocks
                                     if (tokenName === 'tagname') {
                                         const closingTagSpan = newBlockElement.querySelector('.closing-tag-name');
@@ -1065,6 +1289,16 @@ ${i}</body>
                         
                         targetDropZone.appendChild(newBlockElement);
                         updatePlaceholderVisibility(targetDropZone);
+                        
+                        // Initialize CodeMirror for custom blocks with textareas
+                        setTimeout(() => {
+                            const textareas = newBlockElement.querySelectorAll('textarea[data-token].themed-textarea');
+                            textareas.forEach(textarea => {
+                                if (textarea.offsetParent !== null) {
+                                    initializeCodeMirror(textarea, customBlock.type);
+                                }
+                            });
+                        }, 150);
                         
                         // Handle nested content for custom HTML blocks
                         if (customBlock.branches) {
@@ -1121,7 +1355,11 @@ ${i}</body>
         const tokenElements = blockElement.querySelectorAll('[data-token]');
         tokenElements.forEach(element => {
             const tokenName = element.getAttribute('data-token');
-            blockData.tokens[tokenName] = element.value || '';
+            if (element.tagName.toLowerCase() === 'textarea') {
+                blockData.tokens[tokenName] = getTextareaValue(element) || '';
+            } else {
+                blockData.tokens[tokenName] = element.value || '';
+            }
         });
 
         // Extract nested blocks from branches
@@ -1179,10 +1417,24 @@ ${i}</body>
             Object.entries(blockData.tokens).forEach(([tokenName, value]) => {
                 const tokenElement = blockElement.querySelector(`[data-token="${tokenName}"]`);
                 if (tokenElement) {
-                    tokenElement.value = value;
+                    if (tokenElement.tagName.toLowerCase() === 'textarea') {
+                        setTextareaValue(tokenElement, value);
+                    } else {
+                        tokenElement.value = value;
+                    }
                 }
             });
         }
+
+        // Initialize CodeMirror for loaded blocks with textareas
+        setTimeout(() => {
+            const textareas = blockElement.querySelectorAll('textarea[data-token].themed-textarea');
+            textareas.forEach(textarea => {
+                if (textarea.offsetParent !== null) {
+                    initializeCodeMirror(textarea, blockData.type);
+                }
+            });
+        }, 150);
 
         // Rebuild nested branches
         if (blockData.branches) {
@@ -1259,7 +1511,10 @@ ${i}</body>
     populateToolbox();
     addDragAndDropListeners(mainDropZone);
 
-    themeSelect.addEventListener('change', e => document.documentElement.setAttribute('data-theme', e.target.value));
+    themeSelect.addEventListener('change', e => {
+        document.documentElement.setAttribute('data-theme', e.target.value);
+        updateCodeMirrorThemes();
+    });
 
     // Template selector event listener
     templateSelect.addEventListener('change', (e) => {
@@ -1354,6 +1609,7 @@ ${i}</body>
         if (deleteBtn) {
             const block = deleteBtn.closest('.script-block');
             const parentZone = block.parentElement;
+            cleanupCodeMirror(block);
             block.remove();
             updatePlaceholderVisibility(parentZone);
             generateCode();
