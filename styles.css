@@ -806,6 +806,7 @@ h2 {
 }
 
 #copy-button,
+#paste-button,
 #preview-button {
     background-color: var(--primary-color);
     color: var(--bg-color);
@@ -821,6 +822,7 @@ h2 {
 }
 
 #copy-button:hover,
+#paste-button:hover,
 #preview-button:hover {
     opacity: 0.9;
 }
