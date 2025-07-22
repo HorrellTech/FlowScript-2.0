@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,9 +19,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/night.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/oceanic-next.min.css">
     <!-- CodeMirror Addon CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.css">
     <link rel="stylesheet" href="styles.css">
-    
+
     <!-- ADDED: Styles for the new Toolbar -->
     <style>
         .toolbar {
@@ -29,6 +31,7 @@
             align-items: center;
             margin-left: 2rem;
         }
+
         .toolbar-button {
             background-color: var(--color-bg-panel);
             color: var(--color-text-primary);
@@ -42,15 +45,17 @@
             gap: 0.5em;
             transition: background-color 0.2s, color 0.2s;
         }
+
         .toolbar-button:hover {
             background-color: var(--color-primary);
             color: var(--color-bg);
         }
+
         .toolbar-button i {
             font-size: 1em;
         }
     </style>
-    
+
     <!-- CodeMirror JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
@@ -70,16 +75,18 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/brace-fold.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/comment-fold.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/searchcursor.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/match-highlighter.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/match-highlighter.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
     <script src="app.js" defer></script>
 </head>
+
 <body>
 
     <div class="app-container">
         <header class="app-header">
             <h1><i class="fa-solid fa-sitemap"></i> FlowScript 2.0</h1>
-            
+
             <!-- NEW: File Management Toolbar -->
             <div class="toolbar">
                 <button id="new-button" class="toolbar-button" title="Clear workspace and start a new file">
@@ -94,6 +101,12 @@
                 <button id="export-button" class="toolbar-button" title="Export generated HTML code">
                     <i class="fa-solid fa-download"></i> Export HTML
                 </button>
+                <button id="ai-button" class="toolbar-button" title="AI Assistant - Generate FlowScript with AI">
+                    <i class="fa-solid fa-robot"></i> AI Assistant
+                </button>
+                <!--button id="help-button" class="toolbar-button" title="Open FlowScript Documentation">
+                    <i class="fa-solid fa-question-circle"></i> Help
+                </button-->
             </div>
 
             <div class="header-controls">
@@ -117,6 +130,9 @@
                             <button id="mobile-export-btn" class="mobile-dropdown-item">
                                 <i class="fa-solid fa-download"></i> Export HTML
                             </button>
+                            <button id="mobile-ai-btn" class="mobile-dropdown-item">
+                                <i class="fa-solid fa-robot"></i> AI Assistant
+                            </button>
                         </div>
                         <div class="mobile-dropdown-section">
                             <h4>Theme</h4>
@@ -130,6 +146,17 @@
                                 <option value="ocean">Ocean</option>
                                 <option value="sunset">Sunset</option>
                                 <option value="arctic">Arctic</option>
+                                <option value="ironman">Iron Man</option>
+                                <option value="storm">Storm</option>
+                                <option value="midnight">Midnight</option>
+                                <option value="volcano">Volcano</option>
+                                <option value="aurora">Aurora</option>
+                                <option value="desert">Desert</option>
+                                <option value="galaxy">Galaxy</option>
+                                <option value="matrix">Matrix</option>
+                                <option value="frost">Frost</option>
+                                <option value="ember">Ember</option>
+                                <option value="shadow">Shadow</option>
                             </select>
                         </div>
                         <div class="mobile-dropdown-section">
@@ -146,7 +173,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <button id="mobile-toggle" class="mobile-toggle-btn" title="Toggle mobile view">
                     <i class="fa-solid fa-mobile-screen"></i>
                 </button>
@@ -162,6 +189,17 @@
                         <option value="ocean">Ocean</option>
                         <option value="sunset">Sunset</option>
                         <option value="arctic">Arctic</option>
+                        <option value="ironman">Iron Man</option>
+                        <option value="storm">Storm</option>
+                        <option value="midnight">Midnight</option>
+                        <option value="volcano">Volcano</option>
+                        <option value="aurora">Aurora</option>
+                        <option value="desert">Desert</option>
+                        <option value="galaxy">Galaxy</option>
+                        <option value="matrix">Matrix</option>
+                        <option value="frost">Frost</option>
+                        <option value="ember">Ember</option>
+                        <option value="shadow">Shadow</option>
                     </select>
                 </div>
                 <div class="template-selector">
@@ -177,10 +215,14 @@
                     </select>
                 </div>
                 <!-- Buy Me A Coffee button to the right of zoom controls -->
+                <button id="mobile-help-button" class="mobile-toggle-btn" title="Open FlowScript Documentation"
+                    style="margin-right: 1rem;">
+                    <i class="fa-solid fa-question-circle"></i>
+                </button>
                 <a href="https://www.buymeacoffee.com/SynKrown" target="_blank" class="bmc-button"
                     style="margin-left:16px;vertical-align:middle;display:inline-block;">
-                    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="40"
-                        style="vertical-align:middle;">
+                    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee"
+                        height="40" style="vertical-align:middle;">
                 </a>
             </div>
         </header>
@@ -213,10 +255,558 @@
                         <i class="fa-solid fa-eye"></i> Preview
                     </button>
                 </div>
-                <pre class="code-preview"><code id="generated-code">// Your generated code will appear here...</code></pre>
+                <pre
+                    class="code-preview"><code id="generated-code">// Your generated code will appear here...</code></pre>
             </aside>
         </main>
     </div>
 
+    <!-- Documentation Modal -->
+    <div id="documentation-modal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-book"></i> FlowScript 2.0 Documentation</h2>
+                <button id="close-modal" class="modal-close-btn" title="Close Documentation">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-content">
+                <div class="doc-sidebar">
+                    <nav class="doc-nav">
+                        <ul>
+                            <li><a href="#getting-started" class="doc-nav-link active" data-section="getting-started">
+                                    <i class="fa-solid fa-play"></i> Getting Started
+                                </a></li>
+                            <li><a href="#interface" class="doc-nav-link" data-section="interface">
+                                    <i class="fa-solid fa-desktop"></i> Interface Overview
+                                </a></li>
+                            <li><a href="#blocks" class="doc-nav-link" data-section="blocks">
+                                    <i class="fa-solid fa-cubes"></i> Working with Blocks
+                                </a></li>
+                            <li><a href="#templates" class="doc-nav-link" data-section="templates">
+                                    <i class="fa-solid fa-file-code"></i> Templates
+                                </a></li>
+                            <li><a href="#file-management" class="doc-nav-link" data-section="file-management">
+                                    <i class="fa-solid fa-folder"></i> File Management
+                                </a></li>
+                            <li><a href="#mobile" class="doc-nav-link" data-section="mobile">
+                                    <i class="fa-solid fa-mobile-screen"></i> Mobile Mode
+                                </a></li>
+                            <li>
+                                <a href="#ai-assistant" class="doc-nav-link" data-section="ai-assistant">
+                                    <i class="fa-solid fa-robot"></i> AI Assistant
+                                </a>
+                            </li>
+                            <li><a href="#tips" class="doc-nav-link" data-section="tips">
+                                    <i class="fa-solid fa-lightbulb"></i> Tips & Tricks
+                                </a></li>
+                        </ul>
+                    </nav>
+                </div>
+                <div class="doc-main">
+                    <div class="doc-section active" id="getting-started">
+                        <h3><i class="fa-solid fa-play"></i> Getting Started</h3>
+                        <p>Welcome to FlowScript 2.0! This visual website builder lets you create HTML, CSS, and
+                            JavaScript through an intuitive drag-and-drop interface.</p>
+
+                        <h4>Quick Start Guide</h4>
+                        <ol>
+                            <li><strong>Choose a Template:</strong> Select from pre-built templates or start with a
+                                blank page</li>
+                            <li><strong>Drag Blocks:</strong> Drag blocks from the toolbox (left panel) to the workspace
+                                (center)</li>
+                            <li><strong>Configure Blocks:</strong> Fill in the input fields for each block</li>
+                            <li><strong>Preview:</strong> Click the "Preview" button to see your website in action</li>
+                            <li><strong>Export:</strong> Save your work or export the final HTML</li>
+                        </ol>
+
+                        <div class="doc-tip">
+                            <i class="fa-solid fa-info-circle"></i>
+                            <strong>Tip:</strong> Start with the "Landing Page" template to see FlowScript in action!
+                        </div>
+                    </div>
+
+                    <div class="doc-section" id="interface">
+                        <h3><i class="fa-solid fa-desktop"></i> Interface Overview</h3>
+                        <p>FlowScript's interface is divided into three main areas:</p>
+
+                        <h4>1. Toolbox (Left Panel)</h4>
+                        <ul>
+                            <li><strong>HTML Blocks:</strong> Document structure, headings, paragraphs, images, links
+                            </li>
+                            <li><strong>CSS Blocks:</strong> Style rules, properties, custom CSS</li>
+                            <li><strong>JavaScript Blocks:</strong> Variables, functions, event listeners, loops</li>
+                            <li><strong>Custom Blocks:</strong> Advanced and fallback elements</li>
+                        </ul>
+
+                        <h4>2. Workspace (Center Panel)</h4>
+                        <ul>
+                            <li>Main building area where you construct your website</li>
+                            <li>Drag blocks here from the toolbox</li>
+                            <li>Nested drop zones for structured content (like head/body sections)</li>
+                            <li>Each block can be configured with input fields</li>
+                        </ul>
+
+                        <h4>3. Output Panel (Right Panel)</h4>
+                        <ul>
+                            <li>Shows the generated HTML/CSS/JavaScript code in real-time</li>
+                            <li><strong>Copy Code:</strong> Copy the generated code to clipboard</li>
+                            <li><strong>Preview:</strong> Open your website in a new window</li>
+                        </ul>
+
+                        <h4>Header Controls</h4>
+                        <ul>
+                            <li><strong>File Management:</strong> New, Open, Save, Export buttons</li>
+                            <li><strong>Theme Selector:</strong> Choose from 9 built-in themes</li>
+                            <li><strong>Template Selector:</strong> Load pre-built templates</li>
+                            <li><strong>Mobile Toggle:</strong> Switch to mobile-friendly interface</li>
+                        </ul>
+                    </div>
+
+                    <div class="doc-section" id="blocks">
+                        <h3><i class="fa-solid fa-cubes"></i> Working with Blocks</h3>
+
+                        <h4>Adding Blocks</h4>
+                        <ul>
+                            <li><strong>Drag & Drop:</strong> Drag any block from the toolbox to the workspace</li>
+                            <li><strong>Quick Add:</strong> Click the "+" button on any block to add it instantly</li>
+                            <li><strong>Nested Placement:</strong> Drop blocks into nested zones (like head/body
+                                sections)</li>
+                        </ul>
+
+                        <h4>Configuring Blocks</h4>
+                        <ul>
+                            <li>Each block has input fields for customization</li>
+                            <li>Fill in text fields, select options, and configure properties</li>
+                            <li>Changes are reflected in the generated code immediately</li>
+                            <li>Use the delete button (×) to remove unwanted blocks</li>
+                        </ul>
+
+                        <h4>Block Categories</h4>
+                        <div class="block-category">
+                            <h5><i class="fa-solid fa-file-code" style="color: #f7768e;"></i> HTML Blocks</h5>
+                            <p>Structure your webpage with HTML elements like headings, paragraphs, images, and
+                                containers.</p>
+                        </div>
+                        <div class="block-category">
+                            <h5><i class="fa-solid fa-palette" style="color: #7aa2f7;"></i> CSS Blocks</h5>
+                            <p>Style your webpage with CSS rules, properties, and custom styling.</p>
+                        </div>
+                        <div class="block-category">
+                            <h5><i class="fa-brands fa-js" style="color: #9ece6a;"></i> JavaScript Blocks</h5>
+                            <p>Add interactivity with variables, functions, event listeners, and logic.</p>
+                        </div>
+                        <div class="block-category">
+                            <h5><i class="fa-solid fa-code" style="color: #ff9500;"></i> Custom Blocks</h5>
+                            <p>Advanced blocks for custom HTML elements and raw code.</p>
+                        </div>
+                    </div>
+
+                    <div class="doc-section" id="templates">
+                        <h3><i class="fa-solid fa-file-code"></i> Templates</h3>
+                        <p>FlowScript includes several pre-built templates to get you started quickly:</p>
+
+                        <div class="template-grid">
+                            <div class="template-card">
+                                <h4>Blank Page</h4>
+                                <p>A minimal HTML document with basic structure - perfect for starting from scratch.</p>
+                            </div>
+                            <div class="template-card">
+                                <h4>Landing Page</h4>
+                                <p>A modern landing page with hero section, call-to-action, and content areas.</p>
+                            </div>
+                            <div class="template-card">
+                                <h4>Portfolio</h4>
+                                <p>A personal portfolio template with project showcases and about section.</p>
+                            </div>
+                            <div class="template-card">
+                                <h4>Blog Post</h4>
+                                <p>A clean blog post template with typography and content structure.</p>
+                            </div>
+                            <div class="template-card">
+                                <h4>Contact Form</h4>
+                                <p>A contact page with form elements and styling.</p>
+                            </div>
+                            <div class="template-card">
+                                <h4>Dashboard</h4>
+                                <p>A simple dashboard layout with sidebar and content areas.</p>
+                            </div>
+                        </div>
+
+                        <div class="doc-warning">
+                            <i class="fa-solid fa-exclamation-triangle"></i>
+                            <strong>Note:</strong> Loading a template will overwrite your current workspace. Save your
+                            work first!
+                        </div>
+                    </div>
+
+                    <div class="doc-section" id="file-management">
+                        <h3><i class="fa-solid fa-folder"></i> File Management</h3>
+
+                        <h4>Saving Your Work</h4>
+                        <ul>
+                            <li><strong>Save Workspace:</strong> Saves your current blocks as a JSON file that can be
+                                reopened later</li>
+                            <li><strong>Export HTML:</strong> Exports the generated code as a standalone HTML file</li>
+                            <li>Both options preserve your work for future editing or deployment</li>
+                        </ul>
+
+                        <h4>Opening Files</h4>
+                        <ul>
+                            <li><strong>JSON Files:</strong> Reopens saved FlowScript workspaces</li>
+                            <li><strong>HTML Files:</strong> Imports existing HTML and converts it to blocks (when
+                                possible)</li>
+                            <li>The import feature works best with clean, well-structured HTML</li>
+                        </ul>
+
+                        <h4>Starting Fresh</h4>
+                        <ul>
+                            <li><strong>New:</strong> Clears the workspace and creates a basic HTML structure</li>
+                            <li>Includes essential elements like DOCTYPE, head, and body sections</li>
+                            <li>Perfect starting point for new projects</li>
+                        </ul>
+                    </div>
+
+                    <div class="doc-section" id="mobile">
+                        <h3><i class="fa-solid fa-mobile-screen"></i> Mobile Mode</h3>
+                        <p>FlowScript automatically adapts to mobile devices and small screens, but you can also
+                            manually toggle mobile mode.</p>
+
+                        <h4>Mobile Features</h4>
+                        <ul>
+                            <li><strong>Panel Toggles:</strong> Left and right buttons to show/hide toolbox and output
+                                panels</li>
+                            <li><strong>Mobile Menu:</strong> Dropdown menu for file management, themes, and templates
+                            </li>
+                            <li><strong>Touch-Friendly:</strong> Larger touch targets and improved interactions</li>
+                            <li><strong>Auto-Detection:</strong> Automatically enables on screens ≤ 768px wide</li>
+                        </ul>
+
+                        <h4>Mobile Controls</h4>
+                        <ul>
+                            <li><strong>Toolbox Toggle:</strong> Left panel button or Ctrl/Cmd + T</li>
+                            <li><strong>Output Toggle:</strong> Right panel button or Ctrl/Cmd + O</li>
+                            <li><strong>Mobile Menu:</strong> Hamburger menu or Ctrl/Cmd + M</li>
+                            <li><strong>Close Panels:</strong> Tap overlay or press Escape</li>
+                        </ul>
+
+                        <div class="doc-tip">
+                            <i class="fa-solid fa-mobile-screen"></i>
+                            <strong>Mobile Tip:</strong> Use the "+" buttons on blocks for quick addition on touch
+                            devices!
+                        </div>
+                    </div>
+
+                    <div class="doc-section" id="ai-assistant">
+                        <h3><i class="fa-solid fa-robot"></i> AI Assistant</h3>
+                        <p>
+                            The AI Assistant helps you generate FlowScript blocks and complete HTML/CSS/JS code using
+                            advanced AI models like OpenAI GPT-4, Claude, Gemini, and Cohere.
+                        </p>
+                        <h4>How to Use the AI Assistant</h4>
+                        <ol>
+                            <li>
+                                <strong>Configure API Keys:</strong> Go to the <b>Settings</b> tab in the AI modal and
+                                enter your API key for your chosen provider.
+                            </li>
+                            <li>
+                                <strong>Select Provider & Model:</strong> Choose your AI provider and model in the
+                                <b>Generate</b> tab.
+                            </li>
+                            <li>
+                                <strong>Write a Prompt:</strong> Describe what you want to build. The more specific, the
+                                better!
+                            </li>
+                            <li>
+                                <strong>Generate:</strong> Click <b>Generate FlowScript</b> and wait for the AI to
+                                produce code.
+                            </li>
+                            <li>
+                                <strong>Review & Use:</strong> Review the generated code and click <b>Use This Code</b>
+                                to load it into your workspace.
+                            </li>
+                        </ol>
+                        <h4>Example Prompt</h4>
+                        <div class="doc-tip">
+                            <i class="fa-solid fa-copy"></i>
+                            <strong>Copy & Edit:</strong>
+                            <pre
+                                style="background:#222;color:#fff;padding:1em;border-radius:6px;white-space:pre-wrap;font-size:1em;">
+Create a modern landing page for a fitness app. 
+Include a hero section with a headline and call-to-action button, 
+a features list with icons, and a contact form. 
+Use a blue and green color scheme, and make the design responsive.
+        </pre>
+                            <button
+                                onclick="navigator.clipboard.writeText('Create a modern landing page for a fitness app.\\nInclude a hero section with a headline and call-to-action button,\\na features list with icons, and a contact form.\\nUse a blue and green color scheme, and make the design responsive.')"
+                                style="margin-top:0.5em;padding:0.5em 1em;border-radius:4px;background:#7dcfff;color:#222;border:none;cursor:pointer;">
+                                <i class="fa-solid fa-copy"></i> Copy Example
+                            </button>
+                        </div>
+                        <h4>Tips for Better Results</h4>
+                        <ul>
+                            <li>Be specific about layout, colors, and features you want.</li>
+                            <li>Mention if you want CSS styling or JavaScript functionality.</li>
+                            <li>Review and edit the generated code as needed.</li>
+                            <li>Try different providers/models for varied results.</li>
+                        </ul>
+                    </div>
+
+                    <div class="doc-section" id="tips">
+                        <h3><i class="fa-solid fa-lightbulb"></i> Tips & Tricks</h3>
+
+                        <h4>Building Efficiently</h4>
+                        <ul>
+                            <li><strong>Start with Structure:</strong> Begin with an HTML Document block, then add head
+                                and body content</li>
+                            <li><strong>Use Templates:</strong> Start with a template close to your desired design</li>
+                            <li><strong>Group Related Blocks:</strong> Keep CSS and JavaScript blocks organized near
+                                their related HTML</li>
+                            <li><strong>Preview Often:</strong> Use the preview button to see how your site looks</li>
+                        </ul>
+
+                        <h4>Advanced Techniques</h4>
+                        <ul>
+                            <li><strong>Custom CSS:</strong> Use Raw CSS blocks for advanced styling not covered by
+                                other blocks</li>
+                            <li><strong>JavaScript Interactivity:</strong> Combine Get Element, Add Event Listener, and
+                                function blocks for dynamic behavior</li>
+                            <li><strong>Nested Containers:</strong> Use Div Container blocks to create complex layouts
+                            </li>
+                            <li><strong>Import Existing Code:</strong> Import HTML files to convert existing websites to
+                                blocks</li>
+                        </ul>
+
+                        <h4>Troubleshooting</h4>
+                        <ul>
+                            <li><strong>Missing Content:</strong> Check that blocks are in the correct nested zones
+                                (head vs body)</li>
+                            <li><strong>Styling Issues:</strong> Ensure CSS blocks are in the head section or use inline
+                                styles</li>
+                            <li><strong>JavaScript Errors:</strong> Use Console Log blocks to debug your JavaScript</li>
+                            <li><strong>Import Problems:</strong> Complex HTML may not import perfectly - use custom
+                                blocks as needed</li>
+                        </ul>
+
+                        <h4>Keyboard Shortcuts</h4>
+                        <ul>
+                            <li><strong>Ctrl/Cmd + S:</strong> Quick save (triggers save workspace)</li>
+                            <li><strong>Ctrl/Cmd + N:</strong> New workspace</li>
+                            <li><strong>Ctrl/Cmd + O:</strong> Open file</li>
+                            <li><strong>Escape:</strong> Close modals and mobile panels</li>
+                        </ul>
+
+                        <div class="doc-success">
+                            <i class="fa-solid fa-check-circle"></i>
+                            <strong>Pro Tip:</strong> Save your workspace frequently and experiment with different
+                            themes to find the perfect look!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Assistant Modal -->
+    <div id="ai-modal" class="modal-overlay">
+        <div class="modal-container ai-modal-container">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-robot"></i> AI Assistant</h2>
+                <button id="ai-close-btn" class="modal-close-btn" title="Close AI Assistant">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <div class="ai-modal-content">
+                <div class="ai-tabs">
+                    <button class="ai-tab-btn active" data-tab="generate">
+                        <i class="fa-solid fa-magic-wand-sparkles"></i> Generate
+                    </button>
+                    <button class="ai-tab-btn" data-tab="settings">
+                        <i class="fa-solid fa-cog"></i> Settings
+                    </button>
+                </div>
+
+                <!-- Generate Tab -->
+                <div id="ai-generate-tab" class="ai-tab-content active">
+                    <div class="ai-generate-section">
+                        <h3>Generate FlowScript with AI</h3>
+                        <p>Describe what you want to create and let AI generate the FlowScript blocks for you.</p>
+
+                        <div class="ai-provider-selector">
+                            <label for="ai-provider-select">AI Provider:</label>
+                            <select id="ai-provider-select">
+                                <option value="">Select AI Provider...</option>
+                                <option value="openai">OpenAI (GPT-4)</option>
+                                <option value="claude">Anthropic Claude</option>
+                                <option value="gemini">Google Gemini</option>
+                                <option value="cohere">Cohere</option>
+                            </select>
+                        </div>
+
+                        <div class="ai-prompt-section">
+                            <label for="ai-prompt">Describe what you want to create:</label>
+                            <textarea id="ai-prompt"
+                                placeholder="Example: Create a landing page for a tech startup with a hero section, features list, and contact form. Use modern styling with a blue color scheme."
+                                rows="4"></textarea>
+                        </div>
+
+                        <div class="ai-options">
+                            <label>
+                                <input type="checkbox" id="ai-include-styling" checked>
+                                Include CSS styling
+                            </label>
+                            <label>
+                                <input type="checkbox" id="ai-include-javascript">
+                                Include JavaScript functionality
+                            </label>
+                            <label>
+                                <input type="checkbox" id="ai-replace-workspace">
+                                Replace current workspace
+                            </label>
+                        </div>
+
+                        <div class="ai-generate-actions">
+                            <button id="ai-generate-btn" class="ai-btn ai-btn-primary" disabled>
+                                <i class="fa-solid fa-magic-wand-sparkles"></i> Generate FlowScript
+                            </button>
+                            <button id="ai-clear-btn" class="ai-btn ai-btn-secondary">
+                                <i class="fa-solid fa-eraser"></i> Clear
+                            </button>
+                        </div>
+
+                        <div id="ai-status" class="ai-status hidden"></div>
+                        <div id="ai-result" class="ai-result hidden">
+                            <h4>Generated Code:</h4>
+                            <pre><code id="ai-result-code"></code></pre>
+                            <div class="ai-result-actions">
+                                <button id="ai-use-result-btn" class="ai-btn ai-btn-primary">
+                                    <i class="fa-solid fa-download"></i> Use This Code
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="ai-settings-tab" class="ai-tab-content">
+                    <div class="ai-settings-section">
+                        <h3>AI Provider Settings</h3>
+                        <p>Configure your API keys for different AI providers. Keys are stored locally in your browser.
+                        </p>
+
+                        <div class="ai-provider-settings">
+                            <div class="ai-provider-setting">
+                                <h4><i class="fa-solid fa-brain" style="color: #10a37f;"></i> OpenAI</h4>
+                                <div class="ai-model-selector">
+                                    <label for="openai-model">Model:</label>
+                                    <select id="openai-model" data-provider="openai">
+                                        <option value="gpt-4o">GPT-4o</option>
+                                        <option value="gpt-4o-mini">GPT-4o Mini</option>
+                                        <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                                        <option value="gpt-4">GPT-4</option>
+                                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                                    </select>
+                                </div>
+                                <div class="ai-key-input-group">
+                                    <input type="password" id="openai-key" placeholder="Enter your OpenAI API key">
+                                    <button class="ai-key-toggle" data-target="openai-key">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                    <button class="ai-key-test" data-provider="openai">
+                                        <i class="fa-solid fa-vial"></i> Test
+                                    </button>
+                                </div>
+                                <small>Get your API key from <a href="https://platform.openai.com/api-keys"
+                                        target="_blank">OpenAI Platform</a></small>
+                            </div>
+
+                            <div class="ai-provider-setting">
+                                <h4><i class="fa-solid fa-robot" style="color: #d97706;"></i> Anthropic Claude</h4>
+                                <div class="ai-model-selector">
+                                    <label for="claude-model">Model:</label>
+                                    <select id="claude-model" data-provider="claude">
+                                        <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet</option>
+                                        <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku</option>
+                                        <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
+                                        <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
+                                    </select>
+                                </div>
+                                <div class="ai-key-input-group">
+                                    <input type="password" id="claude-key" placeholder="Enter your Claude API key">
+                                    <button class="ai-key-toggle" data-target="claude-key">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                    <button class="ai-key-test" data-provider="claude">
+                                        <i class="fa-solid fa-vial"></i> Test
+                                    </button>
+                                </div>
+                                <small>Get your API key from <a href="https://console.anthropic.com/"
+                                        target="_blank">Anthropic Console</a></small>
+                            </div>
+
+                            <div class="ai-provider-setting">
+                                <h4><i class="fa-solid fa-gem" style="color: #4285f4;"></i> Google Gemini</h4>
+                                <div class="ai-model-selector">
+                                    <label for="gemini-model">Model:</label>
+                                    <select id="gemini-model" data-provider="gemini">
+                                        <option value="gemini-2.0-flash-exp">Gemini 2.0 Flash (Experimental)</option>
+                                        <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                                        <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                                        <option value="gemini-pro">Gemini Pro</option>
+                                    </select>
+                                </div>
+                                <div class="ai-key-input-group">
+                                    <input type="password" id="gemini-key" placeholder="Enter your Gemini API key">
+                                    <button class="ai-key-toggle" data-target="gemini-key">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                    <button class="ai-key-test" data-provider="gemini">
+                                        <i class="fa-solid fa-vial"></i> Test
+                                    </button>
+                                </div>
+                                <small>Get your API key from <a href="https://makersuite.google.com/app/apikey"
+                                        target="_blank">Google AI Studio</a></small>
+                            </div>
+
+                            <div class="ai-provider-setting">
+                                <h4><i class="fa-solid fa-circle-nodes" style="color: #39c5bb;"></i> Cohere</h4>
+                                <div class="ai-model-selector">
+                                    <label for="cohere-model">Model:</label>
+                                    <select id="cohere-model" data-provider="cohere">
+                                        <option value="command-r-plus">Command R+</option>
+                                        <option value="command-r">Command R</option>
+                                        <option value="command">Command</option>
+                                        <option value="command-light">Command Light</option>
+                                    </select>
+                                </div>
+                                <div class="ai-key-input-group">
+                                    <input type="password" id="cohere-key" placeholder="Enter your Cohere API key">
+                                    <button class="ai-key-toggle" data-target="cohere-key">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                    <button class="ai-key-test" data-provider="cohere">
+                                        <i class="fa-solid fa-vial"></i> Test
+                                    </button>
+                                </div>
+                                <small>Get your API key from <a href="https://dashboard.cohere.ai/api-keys"
+                                        target="_blank">Cohere Dashboard</a></small>
+                            </div>
+                        </div>
+
+                        <div class="ai-settings-actions">
+                            <button id="ai-save-settings-btn" class="ai-btn ai-btn-primary">
+                                <i class="fa-solid fa-save"></i> Save Settings
+                            </button>
+                            <button id="ai-clear-settings-btn" class="ai-btn ai-btn-danger">
+                                <i class="fa-solid fa-trash"></i> Clear All Keys
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
+
 </html>

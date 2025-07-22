@@ -807,6 +807,14 @@ ${i}</body>
     const mobileThemeSelect = document.getElementById('mobile-theme-select');
     const mobileTemplateSelect = document.getElementById('mobile-template-select');
 
+    // Documentation modal references
+    const helpButton = document.getElementById('help-button');
+    const mobileHelpButton = document.getElementById('mobile-help-button');
+    const documentationModal = document.getElementById('documentation-modal');
+    const closeModalBtn = document.getElementById('close-modal');
+    const docNavLinks = document.querySelectorAll('.doc-nav-link');
+    const docSections = document.querySelectorAll('.doc-section');
+
     // =========================================================================
     // == MOBILE FUNCTIONALITY ==
     // =========================================================================
@@ -1390,7 +1398,7 @@ ${i}</body>
         const block = document.createElement('div');
         block.className = 'script-block'; block.dataset.type = type; block.draggable = true;
         block.style.borderLeft = `4px solid ${definition.color}`;
-        block.innerHTML = `<div class="block-header"><i class="${definition.icon}"></i><span>${definition.label}</span></div>${definition.html()}<button class="delete-block-btn" title="Delete Block"><i class="fa-solid fa-xmark"></i></button>`;
+        block.innerHTML = `<div class="block-header"><button class="collapse-toggle" title="Collapse/Expand Block"><i class="fa-solid fa-chevron-down"></i></button><i class="${definition.icon}"></i><span>${definition.label}</span></div>${definition.html()}<button class="delete-block-btn" title="Delete Block"><i class="fa-solid fa-xmark"></i></button>`;
         block.querySelectorAll('.nested-drop-zone').forEach(addDragAndDropListeners);
         
         // Initialize CodeMirror for appropriate textareas - Fixed timing
@@ -1933,6 +1941,26 @@ ${i}</body>
             block.remove();
             updatePlaceholderVisibility(parentZone);
             generateCode();
+            return;
+        }
+
+        const collapseBtn = e.target.closest('.collapse-toggle');
+        if (collapseBtn) {
+            const block = collapseBtn.closest('.script-block');
+            const isCollapsed = block.classList.contains('collapsed');
+            
+            if (isCollapsed) {
+                // Expand the block
+                block.classList.remove('collapsed');
+                collapseBtn.querySelector('i').style.transform = '';
+                collapseBtn.title = 'Collapse Block';
+            } else {
+                // Collapse the block
+                block.classList.add('collapsed');
+                collapseBtn.querySelector('i').style.transform = 'rotate(-90deg)';
+                collapseBtn.title = 'Expand Block';
+            }
+            return;
         }
     });
 
@@ -2255,4 +2283,1038 @@ ${i}</body>
     setTimeout(() => {
         checkMobileMode();
     }, 100);
+
+    // =========================================================================
+    // == DOCUMENTATION MODAL FUNCTIONALITY ==
+    // =========================================================================
+
+    /**
+     * Open the documentation modal
+     */
+    const openDocumentationModal = () => {
+        documentationModal.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        
+        // Close mobile panels if open
+        if (isMobileMode) {
+            closeMobilePanels();
+            closeMobileDropdown();
+        }
+        
+        // Focus on the modal for accessibility
+        setTimeout(() => {
+            if (closeModalBtn) {
+                closeModalBtn.focus();
+            }
+        }, 300);
+    };
+
+    /**
+     * Close the documentation modal
+     */
+    const closeDocumentationModal = () => {
+        documentationModal.classList.remove('active');
+        document.body.style.overflow = ''; // Restore background scrolling
+    };
+
+    /**
+     * Switch to a specific documentation section
+     */
+    const switchDocSection = (sectionId) => {
+        // Hide all sections
+        docSections.forEach(section => {
+            section.classList.remove('active');
+        });
+        
+        // Remove active class from all nav links
+        docNavLinks.forEach(link => {
+            link.classList.remove('active');
+        });
+        
+        // Show the target section
+        const targetSection = document.getElementById(sectionId);
+        if (targetSection) {
+            targetSection.classList.add('active');
+        }
+        
+        // Add active class to the corresponding nav link
+        const targetNavLink = document.querySelector(`[data-section="${sectionId}"]`);
+        if (targetNavLink) {
+            targetNavLink.classList.add('active');
+        }
+        
+        // Scroll to top of the main content area
+        const docMain = document.querySelector('.doc-main');
+        if (docMain) {
+            docMain.scrollTop = 0;
+        }
+    };
+
+    /**
+     * Handle clicks outside the modal to close it
+     */
+    const handleModalOutsideClick = (event) => {
+        if (event.target === documentationModal) {
+            closeDocumentationModal();
+        }
+    };
+
+    // Documentation modal event listeners
+    if (helpButton) {
+        helpButton.addEventListener('click', () => {
+            openDocumentationModal();
+        });
+    }
+
+    if (mobileHelpButton) {
+        mobileHelpButton.addEventListener('click', () => {
+            openDocumentationModal();
+        });
+    }
+
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', () => {
+            closeDocumentationModal();
+        });
+    }
+
+    // Navigation between documentation sections
+    docNavLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const sectionId = link.getAttribute('data-section');
+            if (sectionId) {
+                switchDocSection(sectionId);
+            }
+        });
+    });
+
+    // Close modal when clicking outside
+    if (documentationModal) {
+        documentationModal.addEventListener('click', handleModalOutsideClick);
+    }
+
+    // Keyboard shortcuts for documentation modal
+    document.addEventListener('keydown', (e) => {
+        // Open documentation with F1 or Ctrl/Cmd + ?
+        if (e.key === 'F1' || (e.key === '?' && (e.ctrlKey || e.metaKey))) {
+            e.preventDefault();
+            openDocumentationModal();
+        }
+        
+        // Close documentation with Escape (if modal is open)
+        if (e.key === 'Escape' && documentationModal.classList.contains('active')) {
+            closeDocumentationModal();
+        }
+        
+        // Navigate sections with arrow keys (if modal is open)
+        if (documentationModal.classList.contains('active')) {
+            const activeNavLink = document.querySelector('.doc-nav-link.active');
+            if (activeNavLink) {
+                let targetLink = null;
+                
+                if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+                    targetLink = activeNavLink.parentElement.nextElementSibling?.querySelector('.doc-nav-link');
+                } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                    targetLink = activeNavLink.parentElement.previousElementSibling?.querySelector('.doc-nav-link');
+                }
+                
+                if (targetLink) {
+                    e.preventDefault();
+                    targetLink.click();
+                }
+            }
+        }
+    });
+
+    // Initialize documentation modal (ensure first section is active)
+    if (docSections.length > 0) {
+        switchDocSection('getting-started');
+    }
+
+    // =========================================================================
+    // == AI ASSISTANT FUNCTIONALITY ==
+    // =========================================================================
+
+    // AI modal references
+    const aiButton = document.getElementById('ai-button');
+    const mobileAiButton = document.getElementById('mobile-ai-button');
+    const aiModal = document.getElementById('ai-modal');
+    const aiCloseBtn = document.getElementById('ai-close-btn');
+    const aiTabBtns = document.querySelectorAll('.ai-tab-btn');
+    const aiTabContents = document.querySelectorAll('.ai-tab-content');
+
+    // AI generation elements
+    const aiProviderSelect = document.getElementById('ai-provider-select');
+    const aiPromptTextarea = document.getElementById('ai-prompt');
+    const aiGenerateBtn = document.getElementById('ai-generate-btn');
+    const aiClearBtn = document.getElementById('ai-clear-btn');
+    const aiStatus = document.getElementById('ai-status');
+    const aiResult = document.getElementById('ai-result');
+    const aiResultCode = document.getElementById('ai-result-code');
+    const aiUseResultBtn = document.getElementById('ai-use-result-btn');
+
+    // AI settings elements
+    const aiSaveSettingsBtn = document.getElementById('ai-save-settings-btn');
+    const aiClearAllKeysBtn = document.getElementById('ai-clear-all-keys-btn');
+
+    // AI provider configurations
+    const AI_PROVIDERS = {
+        openai: {
+            name: 'OpenAI',
+            icon: 'fa-solid fa-brain',
+            apiUrl: 'https://api.openai.com/v1/chat/completions',
+            defaultModel: 'gpt-4',
+            keyPlaceholder: 'sk-...',
+            docsUrl: 'https://platform.openai.com/api-keys'
+        },
+        claude: {
+            name: 'Anthropic Claude',
+            icon: 'fa-solid fa-robot',
+            apiUrl: 'https://api.anthropic.com/v1/messages',
+            defaultModel: 'claude-3-5-sonnet-20241022',
+            keyPlaceholder: 'sk-ant-...',
+            docsUrl: 'https://console.anthropic.com/account/keys'
+        },
+        gemini: {
+            name: 'Google Gemini',
+            icon: 'fa-solid fa-gem',
+            apiUrl: 'https://generativelanguage.googleapis.com/v1beta/models/',
+            defaultModel: 'gemini-1.5-pro',
+            keyPlaceholder: 'AIza...',
+            docsUrl: 'https://makersuite.google.com/app/apikey'
+        },
+        cohere: {
+            name: 'Cohere',
+            icon: 'fa-solid fa-circle-nodes',
+            apiUrl: 'https://api.cohere.ai/v1/generate',
+            defaultModel: 'command-r-plus',
+            keyPlaceholder: 'co-...',
+            docsUrl: 'https://dashboard.cohere.ai/api-keys'
+        }
+    };
+
+    // Local storage keys
+    const STORAGE_KEYS = {
+        AI_KEYS: 'flowscript_ai_keys',
+        THEME: 'flowscript_theme',
+        AI_SETTINGS: 'flowscript_ai_settings'
+    };
+
+    /**
+     * Initialize AI functionality
+     */
+    const initializeAI = () => {
+        setupAIProviderSettings();
+        loadAISettings();
+        loadThemeFromStorage();
+    };
+
+    /**
+     * Setup AI provider settings in the modal
+     */
+    const setupAIProviderSettings = () => {
+        const aiProviderSettings = document.getElementById('ai-provider-settings');
+        if (!aiProviderSettings) return;
+
+        aiProviderSettings.innerHTML = '';
+
+        Object.entries(AI_PROVIDERS).forEach(([providerId, config]) => {
+            const settingDiv = document.createElement('div');
+            settingDiv.className = 'ai-provider-setting';
+            settingDiv.innerHTML = `
+                <h4><i class="${config.icon}"></i> ${config.name}</h4>
+                <div class="ai-key-input-group">
+                    <input type="password"
+                           id="ai-key-${providerId}"
+                           placeholder="${config.keyPlaceholder}"
+                           data-provider="${providerId}">
+                    <button type="button" class="ai-key-toggle" data-provider="${providerId}" title="Show/Hide Key">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                    <button type="button" class="ai-key-test" data-provider="${providerId}" title="Test API Key">
+                        <i class="fa-solid fa-vial"></i>
+                    </button>
+                </div>
+                <small>Get your API key from <a href="${config.docsUrl}" target="_blank">${config.name} Dashboard</a></small>
+            `;
+            aiProviderSettings.appendChild(settingDiv);
+        });
+
+        // Add event listeners for key toggles and tests
+        document.querySelectorAll('.ai-key-toggle').forEach(btn => {
+            btn.addEventListener('click', toggleApiKeyVisibility);
+        });
+
+        document.querySelectorAll('.ai-key-test').forEach(btn => {
+            btn.addEventListener('click', testApiKey);
+        });
+    };
+
+    /**
+     * Toggle API key visibility
+     */
+    const toggleApiKeyVisibility = (e) => {
+        const target = e.currentTarget.dataset.target;
+        const input = document.getElementById(target);
+        const icon = e.currentTarget.querySelector('i');
+
+        if (input && input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'fa-solid fa-eye-slash';
+        } else if (input) {
+            input.type = 'password';
+            icon.className = 'fa-solid fa-eye';
+        }
+    };
+
+    /**
+     * Test API key
+     */
+    const testApiKey = async (e) => {
+        const providerId = e.currentTarget.dataset.provider;
+        const input = document.getElementById(`${providerId}-key`);
+        const apiKey = input ? input.value.trim() : '';
+
+        if (!apiKey) {
+            showAIStatus('Please enter an API key first', 'error');
+            return;
+        }
+
+        const btn = e.currentTarget;
+        const originalIcon = btn.innerHTML;
+        btn.innerHTML = '<div class="ai-loading-spinner"></div>';
+        btn.disabled = true;
+
+        try {
+            const isValid = await validateApiKey(providerId, apiKey);
+            if (isValid) {
+                showAIStatus(`${AI_PROVIDERS[providerId].name} API key is valid!`, 'success');
+                input.style.borderColor = 'var(--accent-color)';
+            } else {
+                showAIStatus(`${AI_PROVIDERS[providerId].name} API key is invalid`, 'error');
+                input.style.borderColor = '#dc3545';
+            }
+        } catch (error) {
+            showAIStatus(`Error testing ${AI_PROVIDERS[providerId].name} API key: ${error.message}`, 'error');
+            input.style.borderColor = '#dc3545';
+        } finally {
+            btn.innerHTML = originalIcon;
+            btn.disabled = false;
+            setTimeout(() => {
+                input.style.borderColor = '';
+            }, 3000);
+        }
+    };
+
+    /**
+     * Validate API key by making a test request
+     */
+    const validateApiKey = async (providerId, apiKey) => {
+        const config = AI_PROVIDERS[providerId];
+        
+        try {
+            let response;
+            
+            switch (providerId) {
+                case 'openai':
+                    response = await fetch('https://api.openai.com/v1/models', {
+                        headers: {
+                            'Authorization': `Bearer ${apiKey}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    break;
+                    
+                case 'claude':
+                    response = await fetch('https://api.anthropic.com/v1/messages', {
+                        method: 'POST',
+                        headers: {
+                            'x-api-key': apiKey,
+                            'Content-Type': 'application/json',
+                            'anthropic-version': '2023-06-01'
+                        },
+                        body: JSON.stringify({
+                            model: 'claude-3-haiku-20240307',
+                            max_tokens: 1,
+                            messages: [{ role: 'user', content: 'test' }]
+                        })
+                    });
+                    break;
+                    
+                case 'gemini':
+                    response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: 'test' }] }]
+                        })
+                    });
+                    break;
+                    
+                case 'cohere':
+                    response = await fetch('https://api.cohere.ai/v1/generate', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${apiKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: 'command-light',
+                            prompt: 'test',
+                            max_tokens: 1
+                        })
+                    });
+                    break;
+                    
+                default:
+                    return false;
+            }
+            
+            return response.ok || response.status === 400; // 400 might be expected for minimal test requests
+        } catch (error) {
+            console.error(`API key validation error for ${providerId}:`, error);
+            return false;
+        }
+    };
+
+    /**
+     * Open AI modal
+     */
+    const openAIModal = () => {
+        aiModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Close mobile panels if open
+        if (isMobileMode) {
+            closeMobilePanels();
+            closeMobileDropdown();
+        }
+        
+        // Load current settings
+        loadAISettings();
+        
+        // Focus on the modal
+        setTimeout(() => {
+            if (aiCloseBtn) {
+                aiCloseBtn.focus();
+            }
+        }, 300);
+    };
+
+    /**
+     * Close AI modal
+     */
+    const closeAIModal = () => {
+        aiModal.classList.remove('active');
+        document.body.style.overflow = '';
+        hideAIStatus();
+        hideAIResult();
+    };
+
+    /**
+     * Switch AI modal tabs
+     */
+    const switchAITab = (tabId) => {
+        // Remove active class from all tabs and contents
+        aiTabBtns.forEach(btn => btn.classList.remove('active'));
+        aiTabContents.forEach(content => content.classList.remove('active'));
+        
+        // Add active class to selected tab and content
+        const selectedTab = document.querySelector(`[data-tab="${tabId}"]`);
+        const selectedContent = document.getElementById(`ai-${tabId}-tab`);
+        
+        if (selectedTab && selectedContent) {
+            selectedTab.classList.add('active');
+            selectedContent.classList.add('active');
+        }
+    };
+
+    /**
+     * Show AI status message
+     */
+    const showAIStatus = (message, type = 'loading') => {
+        aiStatus.className = `ai-status ${type}`;
+        aiStatus.innerHTML = type === 'loading'
+            ? `<div class="ai-loading-spinner"></div> ${message}`
+            : `<i class="fa-solid fa-${type === 'success' ? 'check' : 'exclamation-triangle'}"></i> ${message}`;
+        aiStatus.classList.remove('hidden');
+    };
+
+    /**
+     * Hide AI status message
+     */
+    const hideAIStatus = () => {
+        aiStatus.classList.add('hidden');
+    };
+
+    /**
+     * Show AI result
+     */
+    const showAIResult = (code) => {
+        aiResultCode.textContent = code;
+        aiResult.classList.remove('hidden');
+    };
+
+    /**
+     * Hide AI result
+     */
+    const hideAIResult = () => {
+        aiResult.classList.add('hidden');
+    };
+
+    /**
+     * Generate FlowScript using AI
+     */
+    const generateWithAI = async () => {
+        const provider = aiProviderSelect.value;
+        const prompt = aiPromptTextarea.value.trim();
+        
+        if (!provider) {
+            showAIStatus('Please select an AI provider', 'error');
+            return;
+        }
+        
+        if (!prompt) {
+            showAIStatus('Please enter a prompt describing what you want to build', 'error');
+            return;
+        }
+        
+        const apiKey = getStoredApiKey(provider);
+        if (!apiKey) {
+            showAIStatus(`Please configure your ${AI_PROVIDERS[provider].name} API key in Settings`, 'error');
+            switchAITab('settings');
+            return;
+        }
+        
+        aiGenerateBtn.disabled = true;
+        showAIStatus('Generating FlowScript code...', 'loading');
+        hideAIResult();
+        
+        try {
+            const generatedCode = await callAIProvider(provider, apiKey, prompt);
+            showAIResult(generatedCode);
+            showAIStatus('FlowScript generated successfully!', 'success');
+        } catch (error) {
+            console.error('AI generation error:', error);
+            showAIStatus(`Generation failed: ${error.message}`, 'error');
+        } finally {
+            aiGenerateBtn.disabled = false;
+        }
+    };
+
+    /**
+     * Call AI provider API
+     */
+    const callAIProvider = async (providerId, apiKey, prompt) => {
+        const config = AI_PROVIDERS[providerId];
+        
+        // Get selected model for this provider
+        const modelSelect = document.getElementById(`${providerId}-model`);
+        const selectedModel = modelSelect ? modelSelect.value : config.defaultModel;
+        
+        const systemPrompt = `You are a FlowScript HTML generator. Generate clean, semantic HTML code based on the user's request.
+        
+Rules:
+1. Generate complete, valid HTML documents with DOCTYPE, html, head, and body tags
+2. Include proper meta tags (charset, viewport)
+3. Add a descriptive title
+4. Use semantic HTML elements
+5. Include inline CSS for styling when appropriate
+6. Make the design responsive and modern
+7. Only return the HTML code, no explanations or markdown formatting
+8. Ensure the code is production-ready and follows best practices
+
+User request: ${prompt}`;
+
+        let response;
+        
+        switch (providerId) {
+            case 'openai':
+                response = await fetch(config.apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: selectedModel,
+                        messages: [
+                            { role: 'system', content: systemPrompt },
+                            { role: 'user', content: prompt }
+                        ],
+                        max_tokens: 2000,
+                        temperature: 0.7
+                    })
+                });
+                break;
+                
+            case 'claude':
+                response = await fetch(config.apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'x-api-key': apiKey,
+                        'Content-Type': 'application/json',
+                        'anthropic-version': '2023-06-01'
+                    },
+                    body: JSON.stringify({
+                        model: selectedModel,
+                        max_tokens: 2000,
+                        messages: [
+                            { role: 'user', content: `${systemPrompt}\n\n${prompt}` }
+                        ]
+                    })
+                });
+                break;
+                
+            case 'gemini':
+                response = await fetch(`${config.apiUrl}${selectedModel}:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: `${systemPrompt}\n\n${prompt}` }]
+                        }],
+                        generationConfig: {
+                            maxOutputTokens: 2000,
+                            temperature: 0.7
+                        }
+                    })
+                });
+                break;
+                
+            case 'cohere':
+                response = await fetch(config.apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: selectedModel,
+                        prompt: `${systemPrompt}\n\n${prompt}`,
+                        max_tokens: 2000,
+                        temperature: 0.7
+                    })
+                });
+                break;
+                
+            default:
+                throw new Error('Unsupported AI provider');
+        }
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        let generatedText = '';
+        
+        switch (providerId) {
+            case 'openai':
+                generatedText = data.choices?.[0]?.message?.content || '';
+                break;
+            case 'claude':
+                generatedText = data.content?.[0]?.text || '';
+                break;
+            case 'gemini':
+                generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                break;
+            case 'cohere':
+                generatedText = data.generations?.[0]?.text || '';
+                break;
+        }
+        
+        if (!generatedText) {
+            throw new Error('No content generated by AI');
+        }
+        
+        // Clean up the generated text (remove markdown code blocks if present)
+        generatedText = generatedText.replace(/```html\n?/g, '').replace(/```\n?/g, '').trim();
+        
+        return generatedText;
+    };
+
+    /**
+     * Use AI generated result
+     */
+    const useAIResult = () => {
+        const generatedCode = aiResultCode.textContent;
+        if (!generatedCode) return;
+        
+        // Confirm before replacing workspace
+        const hasContent = mainDropZone.querySelector('.script-block');
+        if (hasContent) {
+            const confirmed = confirm(
+                'This will replace your current workspace with the AI-generated code.\n\n' +
+                'Are you sure you want to continue? Your current work will be lost.'
+            );
+            if (!confirmed) return;
+        }
+        
+        try {
+            // Parse and load the generated HTML
+            parseHtmlAndBuildWorkspace(generatedCode);
+            closeAIModal();
+            
+            // Show success message
+            const successMessage = document.createElement('div');
+            successMessage.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--accent-color);
+                color: var(--bg-color);
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 10000;
+                font-weight: 500;
+            `;
+            successMessage.innerHTML = '<i class="fa-solid fa-check"></i> AI-generated code loaded successfully!';
+            document.body.appendChild(successMessage);
+            
+            setTimeout(() => {
+                successMessage.remove();
+            }, 4000);
+            
+        } catch (error) {
+            console.error('Error loading AI result:', error);
+            showAIStatus(`Error loading generated code: ${error.message}`, 'error');
+        }
+    };
+
+    /**
+     * Clear AI prompt and result
+     */
+    const clearAIGeneration = () => {
+        aiPromptTextarea.value = '';
+        hideAIResult();
+        hideAIStatus();
+    };
+
+    /**
+     * Save AI settings to localStorage
+     */
+    const saveAISettings = () => {
+        const apiKeys = {};
+        const models = {};
+        
+        Object.keys(AI_PROVIDERS).forEach(providerId => {
+            const keyInput = document.getElementById(`${providerId}-key`);
+            const modelSelect = document.getElementById(`${providerId}-model`);
+            
+            if (keyInput && keyInput.value.trim()) {
+                apiKeys[providerId] = keyInput.value.trim();
+            }
+            
+            if (modelSelect && modelSelect.value) {
+                models[providerId] = modelSelect.value;
+            }
+        });
+        
+        // Save API keys
+        localStorage.setItem(STORAGE_KEYS.AI_KEYS, JSON.stringify(apiKeys));
+        
+        // Save other AI settings including models
+        const settings = {
+            defaultProvider: aiProviderSelect.value,
+            models: models,
+            lastSaved: new Date().toISOString()
+        };
+        localStorage.setItem(STORAGE_KEYS.AI_SETTINGS, JSON.stringify(settings));
+        
+        showAIStatus('Settings saved successfully!', 'success');
+        setTimeout(hideAIStatus, 2000);
+    };
+
+    /**
+     * Load AI settings from localStorage
+     */
+    const loadAISettings = () => {
+        try {
+            // Load API keys
+            const storedKeys = localStorage.getItem(STORAGE_KEYS.AI_KEYS);
+            if (storedKeys) {
+                const apiKeys = JSON.parse(storedKeys);
+                Object.entries(apiKeys).forEach(([providerId, key]) => {
+                    const input = document.getElementById(`${providerId}-key`);
+                    if (input) {
+                        input.value = key;
+                    }
+                });
+            }
+            
+            // Load other settings including models
+            const storedSettings = localStorage.getItem(STORAGE_KEYS.AI_SETTINGS);
+            if (storedSettings) {
+                const settings = JSON.parse(storedSettings);
+                
+                if (settings.defaultProvider && aiProviderSelect) {
+                    aiProviderSelect.value = settings.defaultProvider;
+                }
+                
+                if (settings.models) {
+                    Object.entries(settings.models).forEach(([providerId, model]) => {
+                        const modelSelect = document.getElementById(`${providerId}-model`);
+                        if (modelSelect) {
+                            modelSelect.value = model;
+                        }
+                    });
+                }
+            }
+            
+            // Set default models if none are saved
+            Object.keys(AI_PROVIDERS).forEach(providerId => {
+                const modelSelect = document.getElementById(`${providerId}-model`);
+                if (modelSelect && !modelSelect.value) {
+                    modelSelect.value = AI_PROVIDERS[providerId].defaultModel;
+                }
+            });
+        } catch (error) {
+            console.error('Error loading AI settings:', error);
+        }
+    };
+
+    /**
+     * Get stored API key for provider
+     */
+    const getStoredApiKey = (providerId) => {
+        try {
+            const storedKeys = localStorage.getItem(STORAGE_KEYS.AI_KEYS);
+            if (storedKeys) {
+                const apiKeys = JSON.parse(storedKeys);
+                return apiKeys[providerId] || '';
+            }
+        } catch (error) {
+            console.error('Error getting stored API key:', error);
+        }
+        return '';
+    };
+
+    /**
+     * Clear all API keys and model selections
+     */
+    const clearAllApiKeys = () => {
+        const confirmed = confirm(
+            'Are you sure you want to clear all saved API keys and model selections?\n\n' +
+            'This action cannot be undone.'
+        );
+        
+        if (!confirmed) return;
+        
+        // Clear from localStorage
+        localStorage.removeItem(STORAGE_KEYS.AI_KEYS);
+        localStorage.removeItem(STORAGE_KEYS.AI_SETTINGS);
+        
+        // Clear from UI
+        Object.keys(AI_PROVIDERS).forEach(providerId => {
+            const input = document.getElementById(`${providerId}-key`);
+            if (input) {
+                input.value = '';
+                input.style.borderColor = '';
+            }
+            
+            // Clear model selections
+            const modelSelect = document.getElementById(`${providerId}-model`);
+            if (modelSelect) {
+                modelSelect.value = AI_PROVIDERS[providerId].defaultModel;
+            }
+        });
+        
+        if (aiProviderSelect) {
+            aiProviderSelect.value = '';
+        }
+        
+        showAIStatus('All API keys and model selections cleared', 'success');
+        setTimeout(hideAIStatus, 2000);
+    };
+
+    /**
+     * Save theme to localStorage
+     */
+    const saveThemeToStorage = (theme) => {
+        localStorage.setItem(STORAGE_KEYS.THEME, theme);
+    };
+
+    /**
+     * Load theme from localStorage
+     */
+    const loadThemeFromStorage = () => {
+        try {
+            const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME);
+            if (savedTheme && themeSelect) {
+                themeSelect.value = savedTheme;
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                updateCodeMirrorThemes();
+                
+                // Sync mobile theme selector
+                if (mobileThemeSelect) {
+                    mobileThemeSelect.value = savedTheme;
+                }
+            }
+        } catch (error) {
+            console.error('Error loading theme from storage:', error);
+        }
+    };
+
+    // =========================================================================
+    // == MOBILE DRAG IMPROVEMENTS ==
+    // =========================================================================
+
+    /**
+     * Hide palette when dragging in mobile mode
+     */
+    const handleMobileDragStart = (e) => {
+        if (isMobileMode && toolbox.classList.contains('open')) {
+            // Add a small delay to allow drag to start properly
+            setTimeout(() => {
+                closeMobilePanels();
+            }, 100);
+        }
+    };
+
+    // =========================================================================
+    // == AI EVENT LISTENERS ==
+    // =========================================================================
+
+    // AI modal open/close
+    if (aiButton) {
+        aiButton.addEventListener('click', openAIModal);
+    }
+
+    if (mobileAiButton) {
+        mobileAiButton.addEventListener('click', () => {
+            closeMobileDropdown();
+            openAIModal();
+        });
+    }
+
+    if (aiCloseBtn) {
+        aiCloseBtn.addEventListener('click', closeAIModal);
+    }
+
+    // AI modal outside click
+    if (aiModal) {
+        aiModal.addEventListener('click', (e) => {
+            if (e.target === aiModal) {
+                closeAIModal();
+            }
+        });
+    }
+
+    // AI tab switching
+    aiTabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.dataset.tab;
+            switchAITab(tabId);
+        });
+    });
+
+    // AI generation
+    if (aiGenerateBtn) {
+        aiGenerateBtn.addEventListener('click', generateWithAI);
+    }
+
+    // Enable/disable generate button based on provider and prompt
+    const updateGenerateButtonState = () => {
+        if (aiGenerateBtn && aiProviderSelect && aiPromptTextarea) {
+            const hasProvider = aiProviderSelect.value.trim() !== '';
+            const hasPrompt = aiPromptTextarea.value.trim() !== '';
+            aiGenerateBtn.disabled = !(hasProvider && hasPrompt);
+        }
+    };
+
+    // Add event listeners to update button state
+    if (aiProviderSelect) {
+        aiProviderSelect.addEventListener('change', updateGenerateButtonState);
+    }
+
+    if (aiPromptTextarea) {
+        aiPromptTextarea.addEventListener('input', updateGenerateButtonState);
+    }
+
+    // Initial button state check
+    updateGenerateButtonState();
+
+    if (aiClearBtn) {
+        aiClearBtn.addEventListener('click', clearAIGeneration);
+    }
+
+    if (aiUseResultBtn) {
+        aiUseResultBtn.addEventListener('click', useAIResult);
+    }
+
+    // AI settings
+    if (aiSaveSettingsBtn) {
+        aiSaveSettingsBtn.addEventListener('click', saveAISettings);
+    }
+
+    if (aiClearAllKeysBtn) {
+        aiClearAllKeysBtn.addEventListener('click', clearAllApiKeys);
+    }
+
+    // Enhanced theme change listener to save to localStorage
+    themeSelect.addEventListener('change', e => {
+        const selectedTheme = e.target.value;
+        document.documentElement.setAttribute('data-theme', selectedTheme);
+        updateCodeMirrorThemes();
+        saveThemeToStorage(selectedTheme);
+        
+        // Sync mobile theme selector
+        if (mobileThemeSelect) {
+            mobileThemeSelect.value = selectedTheme;
+        }
+    });
+
+    // Enhanced mobile theme selector
+    if (mobileThemeSelect) {
+        mobileThemeSelect.addEventListener('change', (e) => {
+            const selectedTheme = e.target.value;
+            themeSelect.value = selectedTheme;
+            document.documentElement.setAttribute('data-theme', selectedTheme);
+            updateCodeMirrorThemes();
+            saveThemeToStorage(selectedTheme);
+            closeMobileDropdown();
+        });
+    }
+
+    // Enhanced drag start listeners for mobile improvements
+    document.addEventListener('dragstart', (e) => {
+        if (e.target.closest('.tool-item')) {
+            handleMobileDragStart(e);
+        }
+    });
+
+    // Keyboard shortcuts for AI modal
+    document.addEventListener('keydown', (e) => {
+        // Open AI modal with Ctrl/Cmd + I
+        if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
+            e.preventDefault();
+            openAIModal();
+        }
+        
+        // Close AI modal with Escape (if modal is open)
+        if (e.key === 'Escape' && aiModal && aiModal.classList.contains('active')) {
+            closeAIModal();
+        }
+        
+        // Generate with Ctrl/Cmd + Enter in AI modal
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && aiModal && aiModal.classList.contains('active')) {
+            const activeTab = document.querySelector('.ai-tab-content.active');
+            if (activeTab && activeTab.id === 'ai-generate-tab') {
+                e.preventDefault();
+                generateWithAI();
+            }
+        }
+    });
+
+    // Initialize AI functionality
+    initializeAI();
+
 });
