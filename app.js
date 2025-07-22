@@ -1153,12 +1153,12 @@ ${i}</body>
     const appContainer = document.querySelector('.app-container');
     const toolbox = document.getElementById('toolbox');
     const outputPanel = document.getElementById('output-panel');
-    
+
     // Mobile dropdown references
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
     const mobileDropdown = document.getElementById('mobile-dropdown');
     const mobileDropdownContainer = document.querySelector('.mobile-dropdown-container');
-    
+
     // Mobile dropdown item references
     const mobileNewBtn = document.getElementById('mobile-new-btn');
     const mobileOpenBtn = document.getElementById('mobile-open-btn');
@@ -1186,7 +1186,7 @@ ${i}</body>
         const isMobileScreen = window.innerWidth <= 768;
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         const isMobileUserAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
+
         return isMobileScreen || (isTouchDevice && isMobileUserAgent);
     };
 
@@ -1196,21 +1196,21 @@ ${i}</body>
     const createMobilePanelToggles = () => {
         // Remove existing toggles
         document.querySelectorAll('.mobile-panel-toggle').forEach(toggle => toggle.remove());
-        
+
         // Create left toggle for toolbox
         const leftToggle = document.createElement('button');
         leftToggle.className = 'mobile-panel-toggle left';
         leftToggle.innerHTML = '<i class="fa-solid fa-toolbox"></i>';
         leftToggle.title = 'Toggle Toolbox';
         leftToggle.addEventListener('click', () => toggleMobilePanel('left'));
-        
+
         // Create right toggle for output panel
         const rightToggle = document.createElement('button');
         rightToggle.className = 'mobile-panel-toggle right';
         rightToggle.innerHTML = '<i class="fa-solid fa-code"></i>';
         rightToggle.title = 'Toggle Code Output';
         rightToggle.addEventListener('click', () => toggleMobilePanel('right'));
-        
+
         document.body.appendChild(leftToggle);
         document.body.appendChild(rightToggle);
     };
@@ -1235,14 +1235,14 @@ ${i}</body>
     const toggleMobilePanel = (side) => {
         const panel = side === 'left' ? toolbox : outputPanel;
         const overlay = createMobileOverlay();
-        
+
         // Close other panel first
         const otherPanel = side === 'left' ? outputPanel : toolbox;
         otherPanel.classList.remove('open');
-        
+
         // Toggle current panel
         const isOpen = panel.classList.contains('open');
-        
+
         if (isOpen) {
             panel.classList.remove('open');
             overlay.classList.remove('active');
@@ -1269,7 +1269,7 @@ ${i}</body>
      */
     const toggleMobileDropdown = () => {
         const isOpen = mobileDropdown.classList.contains('open');
-        
+
         if (isOpen) {
             closeMobileDropdown();
         } else {
@@ -1283,11 +1283,11 @@ ${i}</body>
     const openMobileDropdown = () => {
         // Close mobile panels first
         closeMobilePanels();
-        
+
         // Open dropdown
         mobileDropdown.classList.add('open');
         mobileMenuBtn.classList.add('active');
-        
+
         // Sync theme and template selectors with main ones
         syncMobileSelectors();
     };
@@ -1328,27 +1328,27 @@ ${i}</body>
         isMobileMode = true;
         appContainer.classList.add('mobile-mode');
         mobileToggleBtn.classList.add('active');
-        
+
         // Convert panels to mobile panels
         toolbox.classList.add('mobile-panel');
         outputPanel.classList.add('mobile-panel', 'right');
-        
+
         // Ensure panels are visible (remove any display: none)
         toolbox.style.display = '';
         outputPanel.style.display = '';
-        
+
         // Create toggle buttons
         createMobilePanelToggles();
-        
+
         // Create overlay
         createMobileOverlay();
-        
+
         // Close panels initially
         closeMobilePanels();
-        
+
         // Sync mobile dropdown selectors
         syncMobileSelectors();
-        
+
         // Show mobile dropdown container
         if (mobileDropdownContainer) {
             mobileDropdownContainer.style.display = 'block';
@@ -1362,27 +1362,27 @@ ${i}</body>
         isMobileMode = false;
         appContainer.classList.remove('mobile-mode');
         mobileToggleBtn.classList.remove('active');
-        
+
         // Close mobile dropdown
         closeMobileDropdown();
-        
+
         // Remove mobile panel classes
         toolbox.classList.remove('mobile-panel', 'open');
         outputPanel.classList.remove('mobile-panel', 'right', 'open');
-        
+
         // Reset panel styles for desktop mode
         toolbox.style.display = '';
         outputPanel.style.display = '';
-        
+
         // Remove toggle buttons
         document.querySelectorAll('.mobile-panel-toggle').forEach(toggle => toggle.remove());
-        
+
         // Remove overlay
         const overlay = document.querySelector('.mobile-overlay');
         if (overlay) {
             overlay.remove();
         }
-        
+
         // Hide mobile dropdown container in desktop mode
         if (mobileDropdownContainer) {
             mobileDropdownContainer.style.display = 'none';
@@ -1394,7 +1394,7 @@ ${i}</body>
      */
     const checkMobileMode = () => {
         const shouldBeAutoMobile = detectMobile();
-        
+
         if (shouldBeAutoMobile && !isAutoMobile && !isMobileMode) {
             // Auto-enable mobile mode
             isAutoMobile = true;
@@ -1404,7 +1404,7 @@ ${i}</body>
             isAutoMobile = false;
             disableMobileMode();
         }
-        
+
         // Ensure mobile dropdown is visible on small screens
         if (shouldBeAutoMobile) {
             mobileDropdownContainer.style.display = 'block';
@@ -1486,13 +1486,13 @@ ${i}</body>
             viewportMargin: Infinity,
             foldGutter: true,
             gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
-            highlightSelectionMatches: {showToken: /\w/, annotateScrollbar: true},
+            highlightSelectionMatches: { showToken: /\w/, annotateScrollbar: true },
             extraKeys: {
                 "Ctrl-Space": "autocomplete",
-                "F11": function(cm) {
+                "F11": function (cm) {
                     cm.setOption("fullScreen", !cm.getOption("fullScreen"));
                 },
-                "Esc": function(cm) {
+                "Esc": function (cm) {
                     if (cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
                 }
             }
@@ -1524,7 +1524,7 @@ ${i}</body>
      */
     const getCodeMirrorTheme = () => {
         const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-        
+
         // Map app themes to appropriate CodeMirror themes
         switch (currentTheme) {
             case 'light':
@@ -1582,11 +1582,11 @@ ${i}</body>
     const getTextareaValue = (textarea) => {
         const blockElement = textarea.closest('.script-block');
         const blockId = blockElement?.dataset.blockId;
-        
+
         if (blockId && codeMirrorInstances.has(blockId)) {
             return codeMirrorInstances.get(blockId).getValue();
         }
-        
+
         return textarea.value;
     };
 
@@ -1596,7 +1596,7 @@ ${i}</body>
     const setTextareaValue = (textarea, value) => {
         const blockElement = textarea.closest('.script-block');
         const blockId = blockElement?.dataset.blockId;
-        
+
         if (blockId && codeMirrorInstances.has(blockId)) {
             codeMirrorInstances.get(blockId).setValue(value);
         } else {
@@ -1648,20 +1648,20 @@ ${i}</body>
                     item.classList.remove('dragging');
                     document.body.classList.remove('no-select');
                 });
-                
+
                 // Add click handler for the plus button
                 const addBtn = item.querySelector('.tool-item-add-btn');
                 addBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                    
+
                     // Create and add the block to the main workspace
                     const newBlock = createBlock(def.type);
                     if (newBlock) {
                         mainDropZone.appendChild(newBlock);
                         updatePlaceholderVisibility(mainDropZone);
                         generateCode();
-                        
+
                         // Show success feedback
                         const originalIcon = addBtn.innerHTML;
                         addBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
@@ -1670,7 +1670,7 @@ ${i}</body>
                             addBtn.innerHTML = originalIcon;
                             addBtn.style.backgroundColor = '';
                         }, 1000);
-                        
+
                         // If in mobile mode, close the toolbox panel after adding
                         if (isMobileMode && toolbox.classList.contains('open')) {
                             setTimeout(() => {
@@ -1679,7 +1679,7 @@ ${i}</body>
                         }
                     }
                 });
-                
+
                 blocksContainer.appendChild(item);
             });
 
@@ -1758,20 +1758,34 @@ ${i}</body>
         const block = document.createElement('div');
         block.className = 'script-block'; block.dataset.type = type; block.draggable = true;
         block.style.borderLeft = `4px solid ${definition.color}`;
-        block.innerHTML = `<div class="block-header"><button class="collapse-toggle" title="Collapse/Expand Block"><i class="fa-solid fa-chevron-down"></i></button><i class="${definition.icon}"></i><span>${definition.label}</span></div>${definition.html()}<button class="delete-block-btn" title="Delete Block"><i class="fa-solid fa-xmark"></i></button>`;
-        block.querySelectorAll('.nested-drop-zone').forEach(addDragAndDropListeners);
-        
+
+        // Custom label for Div Container (and similar blocks)
+        let customLabel = '';
+        if (type === 'div_container') {
+            customLabel = `<span class="block-meta-label" style="color: var(--text-muted-color); font-size: 0.95em; margin-left: 0.5em;"></span>`;
+        }
+        if (type === 'custom_html') {
+            customLabel = `<span class="block-meta-label" style="color: var(--text-muted-color); font-size: 0.95em; margin-left: 0.5em;"></span>`;
+        }
+
+        block.innerHTML = `<div class="block-header">
+        <button class="collapse-toggle" title="Collapse/Expand Block"><i class="fa-solid fa-chevron-down"></i></button>
+        <i class="${definition.icon}"></i>
+        <span>${definition.label}${customLabel}</span>
+    </div>${definition.html()}<button class="delete-block-btn" title="Delete Block"><i class="fa-solid fa-xmark"></i></button>`;
+
         // Initialize CodeMirror for appropriate textareas - Fixed timing
         setTimeout(() => {
             const textareas = block.querySelectorAll('textarea[data-token]');
             textareas.forEach(textarea => {
-                // Only initialize if textarea is visible and has the themed-textarea class
                 if (textarea.classList.contains('themed-textarea') && textarea.offsetParent !== null) {
                     initializeCodeMirror(textarea, type);
                 }
             });
+            // Initialize meta label for container blocks
+            updateBlockMetaLabel(block);
         }, 100);
-        
+
         // Prevent dragging when interacting with text input elements
         block.addEventListener('mousedown', e => {
             const target = e.target;
@@ -1786,7 +1800,7 @@ ${i}</body>
                 }, 100);
             }
         });
-        
+
         block.addEventListener('dragstart', e => {
             // Prevent dragging if the user is interacting with text input elements
             const target = e.target;
@@ -1796,7 +1810,7 @@ ${i}</body>
                 e.preventDefault();
                 return false;
             }
-            
+
             e.stopPropagation();
             draggedElement = block;
             e.dataTransfer.setData('application/x-script-block', type);
@@ -1931,7 +1945,7 @@ ${i}</body>
             } else {
                 // Try to create a custom block as fallback
                 let customBlock = null;
-                
+
                 // Try custom importers in order of preference
                 const customImporters = [
                     BLOCK_DEFINITIONS.custom.find(def => def.type === 'raw_text'),
@@ -1939,7 +1953,7 @@ ${i}</body>
                     BLOCK_DEFINITIONS.custom.find(def => def.type === 'custom_css'),
                     BLOCK_DEFINITIONS.custom.find(def => def.type === 'custom_javascript')
                 ];
-                
+
                 for (const customDef of customImporters) {
                     if (customDef && customDef.importer) {
                         const result = customDef.importer(childNode);
@@ -1950,7 +1964,7 @@ ${i}</body>
                         }
                     }
                 }
-                
+
                 if (customBlock) {
                     const newBlockElement = createBlock(customBlock.type);
                     if (newBlockElement) {
@@ -1974,10 +1988,10 @@ ${i}</body>
                                 }
                             });
                         }
-                        
+
                         targetDropZone.appendChild(newBlockElement);
                         updatePlaceholderVisibility(targetDropZone);
-                        
+
                         // Initialize CodeMirror for custom blocks with textareas
                         setTimeout(() => {
                             const textareas = newBlockElement.querySelectorAll('textarea[data-token].themed-textarea');
@@ -1987,7 +2001,7 @@ ${i}</body>
                                 }
                             });
                         }, 150);
-                        
+
                         // Handle nested content for custom HTML blocks
                         if (customBlock.branches) {
                             Object.entries(customBlock.branches).forEach(([branchName, sourceNode]) => {
@@ -2013,14 +2027,14 @@ ${i}</body>
     const saveWorkspaceState = () => {
         const blocks = [];
         const scriptBlocks = mainDropZone.querySelectorAll(':scope > .script-block');
-        
+
         scriptBlocks.forEach(block => {
             const blockData = extractBlockData(block);
             if (blockData) {
                 blocks.push(blockData);
             }
         });
-        
+
         return {
             version: '2.0',
             blocks: blocks,
@@ -2055,7 +2069,7 @@ ${i}</body>
         branchElements.forEach(branchElement => {
             const branchName = branchElement.getAttribute('data-branch');
             const nestedBlocks = [];
-            
+
             const nestedScriptBlocks = branchElement.querySelectorAll(':scope > .script-block');
             nestedScriptBlocks.forEach(nestedBlock => {
                 const nestedData = extractBlockData(nestedBlock);
@@ -2063,7 +2077,7 @@ ${i}</body>
                     nestedBlocks.push(nestedData);
                 }
             });
-            
+
             blockData.branches[branchName] = nestedBlocks;
         });
 
@@ -2074,7 +2088,7 @@ ${i}</body>
         try {
             // Clear workspace
             mainDropZone.innerHTML = '<p class="placeholder-text">Drop blocks here to start building...</p>';
-            
+
             if (!stateData.blocks || !Array.isArray(stateData.blocks)) {
                 throw new Error('Invalid workspace data format');
             }
@@ -2089,7 +2103,7 @@ ${i}</body>
 
             updatePlaceholderVisibility(mainDropZone);
             generateCode();
-            
+
         } catch (error) {
             console.error('Failed to load workspace state:', error);
             alert(`Failed to load workspace: ${error.message}`);
@@ -2211,13 +2225,13 @@ ${i}</body>
 
         // Check if workspace has content
         const hasContent = mainDropZone.querySelector('.script-block');
-        
+
         if (hasContent) {
             const confirmed = confirm(
                 `Loading the "${TEMPLATE_DEFINITIONS[selectedTemplate].name}" template will overwrite your current workspace.\n\n` +
                 `Are you sure you want to continue? Your current work will be lost.`
             );
-            
+
             if (!confirmed) {
                 // Reset the dropdown to empty selection
                 e.target.value = '';
@@ -2227,7 +2241,7 @@ ${i}</body>
 
         // Load the selected template
         loadTemplate(selectedTemplate);
-        
+
         // Reset the dropdown to show "Select Template..." again
         e.target.value = '';
     });
@@ -2245,19 +2259,19 @@ ${i}</body>
         try {
             // Clear workspace and load template
             mainDropZone.innerHTML = '<p class="placeholder-text">Drop blocks here to start building...</p>';
-            
+
             const parser = new DOMParser();
             const doc = parser.parseFromString(template.html, 'text/html');
             const rootNode = doc.documentElement;
-            
+
             if (!rootNode) {
                 throw new Error('Could not parse template HTML');
             }
-            
+
             buildBlocksFromNode(rootNode, mainDropZone);
             updatePlaceholderVisibility(mainDropZone);
             generateCode();
-            
+
             // Show success message
             const successMessage = document.createElement('span');
             successMessage.style.color = 'var(--accent-color)';
@@ -2265,14 +2279,14 @@ ${i}</body>
             successMessage.style.marginLeft = '0.5rem';
             successMessage.textContent = `✓ ${template.name} loaded`;
             templateSelect.parentElement.appendChild(successMessage);
-            
+
             // Remove success message after 3 seconds
             setTimeout(() => {
                 if (successMessage.parentElement) {
                     successMessage.remove();
                 }
             }, 3000);
-            
+
         } catch (error) {
             console.error('Failed to load template:', error);
             alert(`Failed to load template: ${error.message}`);
@@ -2286,6 +2300,13 @@ ${i}</body>
                 const closingTagSpan = e.target.closest('.script-block').querySelector('.closing-tag-name');
                 if (closingTagSpan) {
                     closingTagSpan.textContent = e.target.value || 'tagname';
+                }
+            }
+            // Update Div Container meta label
+            const block = e.target.closest('.script-block');
+            if (block) {
+                if (block.dataset.type === 'div_container' || block.dataset.type === 'custom_html') {
+                    updateBlockMetaLabel(block);
                 }
             }
             generateCode();
@@ -2308,7 +2329,7 @@ ${i}</body>
         if (collapseBtn) {
             const block = collapseBtn.closest('.script-block');
             const isCollapsed = block.classList.contains('collapsed');
-            
+
             if (isCollapsed) {
                 // Expand the block
                 block.classList.remove('collapsed');
@@ -2369,16 +2390,16 @@ ${i}</body>
 
         // Create a new window for the preview
         const previewWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
-        
+
         if (previewWindow) {
             // Write the generated HTML to the new window
             previewWindow.document.open();
             previewWindow.document.write(generatedCode);
             previewWindow.document.close();
-            
+
             // Set the title of the preview window
             previewWindow.document.title = 'FlowScript Preview';
-            
+
             // Add some basic styling to make it clear this is a preview
             const style = previewWindow.document.createElement('style');
             style.textContent = `
@@ -2491,7 +2512,7 @@ ${i}</body>
             try {
                 // Check file extension to determine how to process it
                 const fileName = file.name.toLowerCase();
-                
+
                 if (fileName.endsWith('.json')) {
                     // Load as workspace state
                     const workspaceData = JSON.parse(fileContent);
@@ -2682,13 +2703,13 @@ ${i}</body>
     const openDocumentationModal = () => {
         documentationModal.classList.add('active');
         document.body.style.overflow = 'hidden'; // Prevent background scrolling
-        
+
         // Close mobile panels if open
         if (isMobileMode) {
             closeMobilePanels();
             closeMobileDropdown();
         }
-        
+
         // Focus on the modal for accessibility
         setTimeout(() => {
             if (closeModalBtn) {
@@ -2713,24 +2734,24 @@ ${i}</body>
         docSections.forEach(section => {
             section.classList.remove('active');
         });
-        
+
         // Remove active class from all nav links
         docNavLinks.forEach(link => {
             link.classList.remove('active');
         });
-        
+
         // Show the target section
         const targetSection = document.getElementById(sectionId);
         if (targetSection) {
             targetSection.classList.add('active');
         }
-        
+
         // Add active class to the corresponding nav link
         const targetNavLink = document.querySelector(`[data-section="${sectionId}"]`);
         if (targetNavLink) {
             targetNavLink.classList.add('active');
         }
-        
+
         // Scroll to top of the main content area
         const docMain = document.querySelector('.doc-main');
         if (docMain) {
@@ -2789,24 +2810,24 @@ ${i}</body>
             e.preventDefault();
             openDocumentationModal();
         }
-        
+
         // Close documentation with Escape (if modal is open)
         if (e.key === 'Escape' && documentationModal.classList.contains('active')) {
             closeDocumentationModal();
         }
-        
+
         // Navigate sections with arrow keys (if modal is open)
         if (documentationModal.classList.contains('active')) {
             const activeNavLink = document.querySelector('.doc-nav-link.active');
             if (activeNavLink) {
                 let targetLink = null;
-                
+
                 if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
                     targetLink = activeNavLink.parentElement.nextElementSibling?.querySelector('.doc-nav-link');
                 } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
                     targetLink = activeNavLink.parentElement.previousElementSibling?.querySelector('.doc-nav-link');
                 }
-                
+
                 if (targetLink) {
                     e.preventDefault();
                     targetLink.click();
@@ -3000,10 +3021,10 @@ ${i}</body>
      */
     const validateApiKey = async (providerId, apiKey) => {
         const config = AI_PROVIDERS[providerId];
-        
+
         try {
             let response;
-            
+
             switch (providerId) {
                 case 'openai':
                     response = await fetch('https://api.openai.com/v1/models', {
@@ -3013,7 +3034,7 @@ ${i}</body>
                         }
                     });
                     break;
-                    
+
                 case 'claude':
                     response = await fetch('https://api.anthropic.com/v1/messages', {
                         method: 'POST',
@@ -3029,7 +3050,7 @@ ${i}</body>
                         })
                     });
                     break;
-                    
+
                 case 'gemini':
                     response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
                         method: 'POST',
@@ -3041,7 +3062,7 @@ ${i}</body>
                         })
                     });
                     break;
-                    
+
                 case 'cohere':
                     response = await fetch('https://api.cohere.ai/v1/generate', {
                         method: 'POST',
@@ -3056,11 +3077,11 @@ ${i}</body>
                         })
                     });
                     break;
-                    
+
                 default:
                     return false;
             }
-            
+
             return response.ok || response.status === 400; // 400 might be expected for minimal test requests
         } catch (error) {
             console.error(`API key validation error for ${providerId}:`, error);
@@ -3074,16 +3095,16 @@ ${i}</body>
     const openAIModal = () => {
         aiModal.classList.add('active');
         document.body.style.overflow = 'hidden';
-        
+
         // Close mobile panels if open
         if (isMobileMode) {
             closeMobilePanels();
             closeMobileDropdown();
         }
-        
+
         // Load current settings
         loadAISettings();
-        
+
         // Focus on the modal
         setTimeout(() => {
             if (aiCloseBtn) {
@@ -3109,11 +3130,11 @@ ${i}</body>
         // Remove active class from all tabs and contents
         aiTabBtns.forEach(btn => btn.classList.remove('active'));
         aiTabContents.forEach(content => content.classList.remove('active'));
-        
+
         // Add active class to selected tab and content
         const selectedTab = document.querySelector(`[data-tab="${tabId}"]`);
         const selectedContent = document.getElementById(`ai-${tabId}-tab`);
-        
+
         if (selectedTab && selectedContent) {
             selectedTab.classList.add('active');
             selectedContent.classList.add('active');
@@ -3159,28 +3180,28 @@ ${i}</body>
     const generateWithAI = async () => {
         const provider = aiProviderSelect.value;
         const prompt = aiPromptTextarea.value.trim();
-        
+
         if (!provider) {
             showAIStatus('Please select an AI provider', 'error');
             return;
         }
-        
+
         if (!prompt) {
             showAIStatus('Please enter a prompt describing what you want to build', 'error');
             return;
         }
-        
+
         const apiKey = getStoredApiKey(provider);
         if (!apiKey) {
             showAIStatus(`Please configure your ${AI_PROVIDERS[provider].name} API key in Settings`, 'error');
             switchAITab('settings');
             return;
         }
-        
+
         aiGenerateBtn.disabled = true;
         showAIStatus('Generating FlowScript code...', 'loading');
         hideAIResult();
-        
+
         try {
             const generatedCode = await callAIProvider(provider, apiKey, prompt);
             showAIResult(generatedCode);
@@ -3198,11 +3219,11 @@ ${i}</body>
      */
     const callAIProvider = async (providerId, apiKey, prompt) => {
         const config = AI_PROVIDERS[providerId];
-        
+
         // Get selected model for this provider
         const modelSelect = document.getElementById(`${providerId}-model`);
         const selectedModel = modelSelect ? modelSelect.value : config.defaultModel;
-        
+
         const systemPrompt = `You are a FlowScript HTML generator. Generate clean, semantic HTML code based on the user's request.
         
 Rules:
@@ -3218,7 +3239,7 @@ Rules:
 User request: ${prompt}`;
 
         let response;
-        
+
         switch (providerId) {
             case 'openai':
                 response = await fetch(config.apiUrl, {
@@ -3238,7 +3259,7 @@ User request: ${prompt}`;
                     })
                 });
                 break;
-                
+
             case 'claude':
                 response = await fetch(config.apiUrl, {
                     method: 'POST',
@@ -3256,7 +3277,7 @@ User request: ${prompt}`;
                     })
                 });
                 break;
-                
+
             case 'gemini':
                 response = await fetch(`${config.apiUrl}${selectedModel}:generateContent?key=${apiKey}`, {
                     method: 'POST',
@@ -3274,7 +3295,7 @@ User request: ${prompt}`;
                     })
                 });
                 break;
-                
+
             case 'cohere':
                 response = await fetch(config.apiUrl, {
                     method: 'POST',
@@ -3290,19 +3311,19 @@ User request: ${prompt}`;
                     })
                 });
                 break;
-                
+
             default:
                 throw new Error('Unsupported AI provider');
         }
-        
+
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
             throw new Error(errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`);
         }
-        
+
         const data = await response.json();
         let generatedText = '';
-        
+
         switch (providerId) {
             case 'openai':
                 generatedText = data.choices?.[0]?.message?.content || '';
@@ -3317,14 +3338,14 @@ User request: ${prompt}`;
                 generatedText = data.generations?.[0]?.text || '';
                 break;
         }
-        
+
         if (!generatedText) {
             throw new Error('No content generated by AI');
         }
-        
+
         // Clean up the generated text (remove markdown code blocks if present)
         generatedText = generatedText.replace(/```html\n?/g, '').replace(/```\n?/g, '').trim();
-        
+
         return generatedText;
     };
 
@@ -3334,7 +3355,7 @@ User request: ${prompt}`;
     const useAIResult = () => {
         const generatedCode = aiResultCode.textContent;
         if (!generatedCode) return;
-        
+
         // Confirm before replacing workspace
         const hasContent = mainDropZone.querySelector('.script-block');
         if (hasContent) {
@@ -3344,12 +3365,12 @@ User request: ${prompt}`;
             );
             if (!confirmed) return;
         }
-        
+
         try {
             // Parse and load the generated HTML
             parseHtmlAndBuildWorkspace(generatedCode);
             closeAIModal();
-            
+
             // Show success message
             const successMessage = document.createElement('div');
             successMessage.style.cssText = `
@@ -3366,11 +3387,11 @@ User request: ${prompt}`;
             `;
             successMessage.innerHTML = '<i class="fa-solid fa-check"></i> AI-generated code loaded successfully!';
             document.body.appendChild(successMessage);
-            
+
             setTimeout(() => {
                 successMessage.remove();
             }, 4000);
-            
+
         } catch (error) {
             console.error('Error loading AI result:', error);
             showAIStatus(`Error loading generated code: ${error.message}`, 'error');
@@ -3392,23 +3413,23 @@ User request: ${prompt}`;
     const saveAISettings = () => {
         const apiKeys = {};
         const models = {};
-        
+
         Object.keys(AI_PROVIDERS).forEach(providerId => {
             const keyInput = document.getElementById(`${providerId}-key`);
             const modelSelect = document.getElementById(`${providerId}-model`);
-            
+
             if (keyInput && keyInput.value.trim()) {
                 apiKeys[providerId] = keyInput.value.trim();
             }
-            
+
             if (modelSelect && modelSelect.value) {
                 models[providerId] = modelSelect.value;
             }
         });
-        
+
         // Save API keys
         localStorage.setItem(STORAGE_KEYS.AI_KEYS, JSON.stringify(apiKeys));
-        
+
         // Save other AI settings including models
         const settings = {
             defaultProvider: aiProviderSelect.value,
@@ -3416,7 +3437,7 @@ User request: ${prompt}`;
             lastSaved: new Date().toISOString()
         };
         localStorage.setItem(STORAGE_KEYS.AI_SETTINGS, JSON.stringify(settings));
-        
+
         showAIStatus('Settings saved successfully!', 'success');
         setTimeout(hideAIStatus, 2000);
     };
@@ -3437,16 +3458,16 @@ User request: ${prompt}`;
                     }
                 });
             }
-            
+
             // Load other settings including models
             const storedSettings = localStorage.getItem(STORAGE_KEYS.AI_SETTINGS);
             if (storedSettings) {
                 const settings = JSON.parse(storedSettings);
-                
+
                 if (settings.defaultProvider && aiProviderSelect) {
                     aiProviderSelect.value = settings.defaultProvider;
                 }
-                
+
                 if (settings.models) {
                     Object.entries(settings.models).forEach(([providerId, model]) => {
                         const modelSelect = document.getElementById(`${providerId}-model`);
@@ -3456,7 +3477,7 @@ User request: ${prompt}`;
                     });
                 }
             }
-            
+
             // Set default models if none are saved
             Object.keys(AI_PROVIDERS).forEach(providerId => {
                 const modelSelect = document.getElementById(`${providerId}-model`);
@@ -3493,13 +3514,13 @@ User request: ${prompt}`;
             'Are you sure you want to clear all saved API keys and model selections?\n\n' +
             'This action cannot be undone.'
         );
-        
+
         if (!confirmed) return;
-        
+
         // Clear from localStorage
         localStorage.removeItem(STORAGE_KEYS.AI_KEYS);
         localStorage.removeItem(STORAGE_KEYS.AI_SETTINGS);
-        
+
         // Clear from UI
         Object.keys(AI_PROVIDERS).forEach(providerId => {
             const input = document.getElementById(`${providerId}-key`);
@@ -3507,18 +3528,18 @@ User request: ${prompt}`;
                 input.value = '';
                 input.style.borderColor = '';
             }
-            
+
             // Clear model selections
             const modelSelect = document.getElementById(`${providerId}-model`);
             if (modelSelect) {
                 modelSelect.value = AI_PROVIDERS[providerId].defaultModel;
             }
         });
-        
+
         if (aiProviderSelect) {
             aiProviderSelect.value = '';
         }
-        
+
         showAIStatus('All API keys and model selections cleared', 'success');
         setTimeout(hideAIStatus, 2000);
     };
@@ -3540,7 +3561,7 @@ User request: ${prompt}`;
                 themeSelect.value = savedTheme;
                 document.documentElement.setAttribute('data-theme', savedTheme);
                 updateCodeMirrorThemes();
-                
+
                 // Sync mobile theme selector
                 if (mobileThemeSelect) {
                     mobileThemeSelect.value = savedTheme;
@@ -3653,7 +3674,7 @@ User request: ${prompt}`;
         document.documentElement.setAttribute('data-theme', selectedTheme);
         updateCodeMirrorThemes();
         saveThemeToStorage(selectedTheme);
-        
+
         // Sync mobile theme selector
         if (mobileThemeSelect) {
             mobileThemeSelect.value = selectedTheme;
@@ -3686,12 +3707,12 @@ User request: ${prompt}`;
             e.preventDefault();
             openAIModal();
         }
-        
+
         // Close AI modal with Escape (if modal is open)
         if (e.key === 'Escape' && aiModal && aiModal.classList.contains('active')) {
             closeAIModal();
         }
-        
+
         // Generate with Ctrl/Cmd + Enter in AI modal
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && aiModal && aiModal.classList.contains('active')) {
             const activeTab = document.querySelector('.ai-tab-content.active');
@@ -3701,6 +3722,30 @@ User request: ${prompt}`;
             }
         }
     });
+
+    function updateBlockMetaLabel(block) {
+        const type = block.dataset.type;
+        const metaLabel = block.querySelector('.block-meta-label');
+        if (!metaLabel) return;
+
+        if (type === 'div_container') {
+            const idInput = block.querySelector('[data-token="id"]');
+            const classInput = block.querySelector('[data-token="class"]');
+            let labelText = '';
+            if (idInput && idInput.value) labelText += `#${idInput.value} `;
+            if (classInput && classInput.value) labelText += `.${classInput.value} `;
+            metaLabel.textContent = labelText.trim();
+        }
+        if (type === 'custom_html') {
+            const tagInput = block.querySelector('[data-token="tagname"]');
+            const attrInput = block.querySelector('[data-token="attributes"]');
+            let labelText = '';
+            if (tagInput && tagInput.value) labelText += `<${tagInput.value}> `;
+            if (attrInput && attrInput.value) labelText += `[${attrInput.value}]`;
+            metaLabel.textContent = labelText.trim();
+        }
+        // Add more container types here if needed
+    }
 
     // Initialize AI functionality
     initializeAI();

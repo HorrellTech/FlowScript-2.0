@@ -2253,3 +2253,9 @@ body.no-select {
     border-radius: 50%;
     animation: ai-loading 1s linear infinite;
 }
+
+.block-meta-label {
+    color: var(--text-muted-color);
+    font-size: 0.95em;
+    margin-left: 0.5em;
+}
